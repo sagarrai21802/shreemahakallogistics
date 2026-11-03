@@ -8,9 +8,9 @@ use App\Models\DriverInvitation;
 use App\Models\TransportRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
 
 class TransportRequestController extends Controller
 {
@@ -27,7 +27,7 @@ class TransportRequestController extends Controller
         'no_driver_available',
     ];
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $q = trim((string) $request->query('q', ''));
         $status = (string) $request->query('status', '');
@@ -37,7 +37,6 @@ class TransportRequestController extends Controller
         }
 
         $requests = TransportRequest::query()
-            ->where('reference', 'TRQ-2026-0143')
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($query) use ($q) {
                     $query->where('reference', 'like', "%{$q}%")
@@ -75,13 +74,17 @@ class TransportRequestController extends Controller
                 'lng',
             ]);
 
-        return view('requests.index', [
-            'requests' => $requests,
-            'statuses' => self::STATUSES,
-            'q' => $q,
-            'status' => $status,
-            'availableDrivers' => $availableDrivers,
-        ]);
+        return response()
+            ->view('requests.index', [
+                'requests' => $requests,
+                'statuses' => self::STATUSES,
+                'q' => $q,
+                'status' => $status,
+                'availableDrivers' => $availableDrivers,
+            ])
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
     }
 
     public function sendDrivers(Request $request, TransportRequest $transportRequest): JsonResponse

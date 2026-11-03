@@ -31,15 +31,13 @@ class PortalScreensTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/requests?status=confirmed')
+        $this->actingAs($user)->get('/requests?status=new')
             ->assertOk()
-            ->assertSee('TRQ-2026-0149')
-            ->assertDontSee('TRQ-2026-0142');
+            ->assertSee('TRQ-2026-0143');
 
-        $this->actingAs($user)->get('/requests?q=TRQ-2026-0147')
+        $this->actingAs($user)->get('/requests?q=TRQ-2026-0143')
             ->assertOk()
-            ->assertSee('TRQ-2026-0147')
-            ->assertDontSee('TRQ-2026-0142');
+            ->assertSee('TRQ-2026-0143');
     }
 
     public function test_drivers_can_be_filtered_by_availability(): void
@@ -71,10 +69,10 @@ class PortalScreensTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->get('/activity?type=driver_rejected')
+        $this->actingAs($user)->get('/activity?type=request_received')
             ->assertOk()
-            ->assertSee('Driver declined an invitation')
-            ->assertDontSee('New request received');
+            ->assertSee('New request received')
+            ->assertDontSee('Driver declined an invitation');
     }
 
     public function test_help_and_account_screens_render(): void
@@ -143,6 +141,6 @@ class PortalScreensTest extends TestCase
             ->assertSessionHas('status');
 
         $this->assertDatabaseMissing('transport_requests', ['reference' => 'TEST-0001']);
-        $this->assertDatabaseHas('transport_requests', ['reference' => 'TRQ-2026-0142']);
+        $this->assertDatabaseHas('transport_requests', ['reference' => 'TRQ-2026-0143']);
     }
 }

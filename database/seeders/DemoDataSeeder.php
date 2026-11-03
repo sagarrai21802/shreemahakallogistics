@@ -43,109 +43,17 @@ class DemoDataSeeder extends Seeder
 
         $requests = collect([
             [
-                'reference' => 'TRQ-2026-0142', 'customer_name' => 'Rakesh Sharma', 'customer_phone' => '+91 98260 41022', 'customer_email' => 'rakesh.sharma@example.test',
-                'pickup_address' => 'Scheme 54, Vijay Nagar', 'pickup_city' => 'Indore',
-                'destination_address' => 'Ganj Peth', 'destination_city' => 'Pune',
-                'goods_category' => 'Furniture', 'goods_description' => 'Two-seater sofa and a dining table, wrapped',
-                'quantity' => '2 items', 'weight_kg' => 450, 'is_fragile' => false, 'needs_loading_help' => true,
-                'special_instructions' => 'Call before arrival; ground floor pickup.',
-                'status' => 'new', 'submitted_at' => $now->copy()->subMinutes(12),
-            ],
-            [
-                'reference' => 'TRQ-2026-0143', 'customer_name' => 'Neha Joshi', 'customer_phone' => '+91 98930 22147', 'customer_email' => null,
+                'reference' => 'TRQ-2026-0143', 'customer_name' => 'Blinkit Enterprise', 'customer_phone' => '+91 98930 22147', 'customer_email' => null,
                 'pickup_address' => 'Kolar Road', 'pickup_city' => 'Bhopal',
                 'destination_address' => 'Palasia', 'destination_city' => 'Indore',
                 'goods_category' => 'Household Items', 'goods_description' => 'Household shifting: cartons and one refrigerator',
-                'quantity' => '14 cartons', 'weight_kg' => 320, 'is_fragile' => false, 'needs_loading_help' => true,
+                'quantity' => '14 cartons', 'weight_kg' => 2000, 'is_fragile' => false, 'needs_loading_help' => true,
                 'special_instructions' => 'Refrigerator must stay upright.',
                 'status' => 'new', 'submitted_at' => $now->copy()->subMinutes(35),
             ],
-            [
-                'reference' => 'TRQ-2026-0144', 'customer_name' => 'Amit Verma', 'customer_phone' => '+91 90090 77412', 'customer_email' => null,
-                'pickup_address' => 'Freeganj', 'pickup_city' => 'Ujjain',
-                'destination_address' => 'Hadapsar', 'destination_city' => 'Pune',
-                'goods_category' => 'Electronics', 'goods_description' => 'LED televisions in original packaging',
-                'quantity' => '6 boxes', 'weight_kg' => 180, 'is_fragile' => true, 'needs_loading_help' => false,
-                'special_instructions' => 'Fragile; keep upright and away from moisture.',
-                'status' => 'new', 'submitted_at' => $now->copy()->subMinutes(70),
-            ],
-            [
-                'reference' => 'TRQ-2026-0145', 'customer_name' => 'Sunrise Interiors', 'customer_phone' => '+91 731 405 1180', 'customer_email' => 'ops@sunriseinteriors.test',
-                'pickup_address' => 'Industrial Area', 'pickup_city' => 'Dewas',
-                'destination_address' => 'Bhiwandi', 'destination_city' => 'Mumbai',
-                'goods_category' => 'Construction Materials', 'goods_description' => 'Tiles and sanitaryware, palletised',
-                'quantity' => '22 pallets', 'weight_kg' => 1200, 'is_fragile' => true, 'needs_loading_help' => true,
-                'special_instructions' => 'Loading help arranged at both ends.',
-                'status' => 'awaiting_responses', 'submitted_at' => $now->copy()->subHours(2),
-            ],
-            [
-                'reference' => 'TRQ-2026-0146', 'customer_name' => 'Kavita Rao', 'customer_phone' => '+91 94250 66381', 'customer_email' => null,
-                'pickup_address' => 'Rau', 'pickup_city' => 'Indore',
-                'destination_address' => 'Adajan', 'destination_city' => 'Surat',
-                'goods_category' => 'Packages', 'goods_description' => 'E-commerce cartons, stacked',
-                'quantity' => '40 cartons', 'weight_kg' => 260, 'is_fragile' => false, 'needs_loading_help' => false,
-                'special_instructions' => null,
-                'status' => 'awaiting_responses', 'submitted_at' => $now->copy()->subMinutes(160),
-            ],
-            [
-                'reference' => 'TRQ-2026-0147', 'customer_name' => 'Shree Balaji Traders', 'customer_phone' => '+91 98270 33015', 'customer_email' => null,
-                'pickup_address' => 'Kamptee Road', 'pickup_city' => 'Nagpur',
-                'destination_address' => 'Kukatpally', 'destination_city' => 'Hyderabad',
-                'goods_category' => 'Furniture', 'goods_description' => 'Office chairs and workstations',
-                'quantity' => '18 units', 'weight_kg' => 800, 'is_fragile' => false, 'needs_loading_help' => true,
-                'special_instructions' => 'Delivery needs a goods lift.',
-                'status' => 'follow_up_needed', 'submitted_at' => $now->copy()->subHours(3),
-            ],
-            [
-                'reference' => 'TRQ-2026-0148', 'customer_name' => 'Prakash Industries', 'customer_phone' => '+91 755 492 2210', 'customer_email' => 'dispatch@prakashind.test',
-                'pickup_address' => 'Govindpura', 'pickup_city' => 'Bhopal',
-                'destination_address' => 'Vishwakarma Industrial Area', 'destination_city' => 'Jaipur',
-                'goods_category' => 'Other', 'goods_description' => 'Industrial pump and fittings',
-                'quantity' => '3 crates', 'weight_kg' => 950, 'is_fragile' => false, 'needs_loading_help' => true,
-                'special_instructions' => 'Crane available at pickup.',
-                'status' => 'follow_up_needed', 'submitted_at' => $now->copy()->subMinutes(200),
-            ],
-            [
-                'reference' => 'TRQ-2026-0149', 'customer_name' => 'Metro Digital', 'customer_phone' => '+91 97130 55428', 'customer_email' => null,
-                'pickup_address' => 'Sapna Sangeeta', 'pickup_city' => 'Indore',
-                'destination_address' => 'Prahlad Nagar', 'destination_city' => 'Ahmedabad',
-                'goods_category' => 'Electronics', 'goods_description' => 'Networking equipment in sealed cartons',
-                'quantity' => '9 boxes', 'weight_kg' => 540, 'is_fragile' => true, 'needs_loading_help' => false,
-                'special_instructions' => null,
-                'status' => 'confirmed', 'submitted_at' => $now->copy()->subHours(26),
-            ],
-            [
-                'reference' => 'TRQ-2026-0150', 'customer_name' => 'Anjali Deshmukh', 'customer_phone' => '+91 99260 88104', 'customer_email' => null,
-                'pickup_address' => 'Dewas Gate', 'pickup_city' => 'Ujjain',
-                'destination_address' => 'MP Nagar', 'destination_city' => 'Bhopal',
-                'goods_category' => 'Packages', 'goods_description' => 'Documents and small cartons',
-                'quantity' => '5 cartons', 'weight_kg' => 120, 'is_fragile' => false, 'needs_loading_help' => false,
-                'special_instructions' => null,
-                'status' => 'closed', 'submitted_at' => $now->copy()->subDays(2),
-            ],
         ])->map(fn (array $row) => TransportRequest::query()->create($row))->keyBy('reference');
 
-        $invitations = [
-            ['request' => 'TRQ-2026-0145', 'driver' => 'DRV-1042', 'status' => 'pending', 'sent' => 120, 'responded' => null],
-            ['request' => 'TRQ-2026-0145', 'driver' => 'DRV-1043', 'status' => 'pending', 'sent' => 120, 'responded' => null],
-            ['request' => 'TRQ-2026-0145', 'driver' => 'DRV-1045', 'status' => 'pending', 'sent' => 118, 'responded' => null],
-            ['request' => 'TRQ-2026-0145', 'driver' => 'DRV-1046', 'status' => 'pending', 'sent' => 116, 'responded' => null],
-            ['request' => 'TRQ-2026-0145', 'driver' => 'DRV-1048', 'status' => 'pending', 'sent' => 115, 'responded' => null],
-            ['request' => 'TRQ-2026-0146', 'driver' => 'DRV-1042', 'status' => 'rejected', 'sent' => 140, 'responded' => 125],
-            ['request' => 'TRQ-2026-0146', 'driver' => 'DRV-1044', 'status' => 'pending', 'sent' => 140, 'responded' => null],
-            ['request' => 'TRQ-2026-0146', 'driver' => 'DRV-1047', 'status' => 'rejected', 'sent' => 135, 'responded' => 110],
-            ['request' => 'TRQ-2026-0147', 'driver' => 'DRV-1045', 'status' => 'accepted', 'sent' => 175, 'responded' => 90],
-            ['request' => 'TRQ-2026-0147', 'driver' => 'DRV-1046', 'status' => 'rejected', 'sent' => 175, 'responded' => 170],
-            ['request' => 'TRQ-2026-0147', 'driver' => 'DRV-1048', 'status' => 'expired', 'sent' => 170, 'responded' => null],
-            ['request' => 'TRQ-2026-0147', 'driver' => 'DRV-1049', 'status' => 'rejected', 'sent' => 165, 'responded' => 150],
-            ['request' => 'TRQ-2026-0148', 'driver' => 'DRV-1043', 'status' => 'accepted', 'sent' => 160, 'responded' => 60],
-            ['request' => 'TRQ-2026-0148', 'driver' => 'DRV-1047', 'status' => 'expired', 'sent' => 155, 'responded' => null],
-            ['request' => 'TRQ-2026-0148', 'driver' => 'DRV-1050', 'status' => 'rejected', 'sent' => 150, 'responded' => 130],
-            ['request' => 'TRQ-2026-0149', 'driver' => 'DRV-1044', 'status' => 'accepted', 'sent' => 1500, 'responded' => 1200],
-            ['request' => 'TRQ-2026-0149', 'driver' => 'DRV-1049', 'status' => 'rejected', 'sent' => 1480, 'responded' => 1440],
-            ['request' => 'TRQ-2026-0150', 'driver' => 'DRV-1042', 'status' => 'rejected', 'sent' => 2900, 'responded' => 2870],
-            ['request' => 'TRQ-2026-0150', 'driver' => 'DRV-1048', 'status' => 'expired', 'sent' => 2880, 'responded' => null],
-        ];
+        $invitations = [];
 
         foreach ($invitations as $invitation) {
             DriverInvitation::query()->create([
@@ -165,14 +73,7 @@ class DemoDataSeeder extends Seeder
         ])->each(fn (array $row) => DriverApplication::query()->create($row));
 
         $events = [
-            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0142 · Vijay Nagar, Indore → Ganj Peth, Pune', 'occurred_at' => $now->copy()->subMinutes(12)],
             ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0143 · Bhopal → Indore', 'occurred_at' => $now->copy()->subMinutes(35)],
-            ['type' => 'application_submitted', 'title' => 'Driver application submitted', 'description' => 'Ravi Chauhan · DRV-2081', 'occurred_at' => $now->copy()->subMinutes(40)],
-            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0144 · Ujjain → Pune', 'occurred_at' => $now->copy()->subMinutes(70)],
-            ['type' => 'driver_accepted', 'title' => 'Driver accepted an invitation', 'description' => 'Deepak Verma accepted TRQ-2026-0147', 'occurred_at' => $now->copy()->subMinutes(90)],
-            ['type' => 'driver_rejected', 'title' => 'Driver declined an invitation', 'description' => 'Arjun Mehta declined TRQ-2026-0146', 'occurred_at' => $now->copy()->subMinutes(110)],
-            ['type' => 'invitation_sent', 'title' => 'Invitations sent', 'description' => '5 drivers invited to TRQ-2026-0145', 'occurred_at' => $now->copy()->subMinutes(120)],
-            ['type' => 'application_submitted', 'title' => 'Driver application submitted', 'description' => 'Mohan Lal · DRV-2082', 'occurred_at' => $now->copy()->subMinutes(130)],
         ];
 
         foreach ($events as $event) {

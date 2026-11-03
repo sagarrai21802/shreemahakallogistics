@@ -9,60 +9,22 @@
         </div>
 
         <div class="req-actions">
-            <button type="button" id="req-status-btn" class="req-status-btn" aria-haspopup="dialog">
-                Manage Status
-            </button>
-            <form id="req-search" class="req-search {{ $q !== '' ? 'is-open' : '' }}" method="GET" action="{{ route('requests.index') }}">
-                <input type="hidden" name="status" value="{{ $status }}">
-                <div class="req-search__field">
-                    <input
-                        id="req-search-input"
-                        class="req-search__input"
-                        type="search"
-                        name="q"
-                        value="{{ $q }}"
-                        placeholder="Reference, customer or city"
-                        autocomplete="off"
-                    >
-                    <button type="submit" class="req-search__btn {{ $q !== '' ? 'is-active' : '' }}" aria-label="Search" title="Search">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </button>
-                </div>
-            </form>
-
-            <button type="button" id="req-filters-btn" class="req-icon-btn {{ ($q !== '' || $status !== '') ? 'is-active' : '' }}" aria-haspopup="dialog" title="Filters">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <button type="button" id="req-master-status-btn" class="req-master-status-btn" title="Change status of selected request (Master Control)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 20h9"/>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                 </svg>
+                Change Status
+            </button>
+            <button type="button" id="req-reset-btn" class="req-reset-btn" title="Reset the selected request to New Request">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                Reset to New
             </button>
         </div>
     </header>
-
-    <dialog id="req-filters-dialog" class="req-dialog">
-        <form method="GET" action="{{ route('requests.index') }}">
-            <input type="hidden" name="q" value="{{ $q }}">
-            <div class="req-dialog__head">
-                <span class="req-dialog__title">Filters</span>
-                <button type="button" class="req-dialog__close" data-dialog-close aria-label="Close">×</button>
-            </div>
-            <div class="req-dialog__body">
-                <label class="req-dialog__label" for="dialog-status">Status</label>
-                <select class="req-dialog__select" id="dialog-status" name="status">
-                    <option value="">All statuses</option>
-                    @foreach ($statuses as $option)
-                        <option value="{{ $option }}" @selected($status === $option)>{{ Str::headline($option) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="req-dialog__foot">
-                <a class="btn btn--quiet" href="{{ route('requests.index') }}">Clear</a>
-                <button class="btn btn--primary" type="submit">Apply</button>
-            </div>
-        </form>
-    </dialog>
 
     <dialog id="accepted-drivers-dialog" class="req-dialog">
         <form id="accepted-drivers-form">
@@ -78,31 +40,90 @@
         </form>
     </dialog>
 
-    <dialog id="req-status-dialog" class="req-dialog req-status-dialog">
-        <form id="req-status-form">
+    <!-- Floating Driver Details Popover Card -->
+    <div id="driver-popover" class="driver-popover" hidden>
+        <div class="driver-popover__head">
+            <span class="driver-popover__ref" id="pop-driver-ref">DRV-1021</span>
+            <h4 class="driver-popover__name" id="pop-driver-name">Driver Name</h4>
+        </div>
+        <div class="driver-popover__body">
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">Phone:</span>
+                <span class="driver-popover__val" id="pop-driver-phone">-</span>
+            </div>
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">Vehicle:</span>
+                <span class="driver-popover__val" id="pop-driver-vehicle">-</span>
+            </div>
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">Registration:</span>
+                <span class="driver-popover__val" id="pop-driver-reg">-</span>
+            </div>
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">Capacity:</span>
+                <span class="driver-popover__val" id="pop-driver-capacity">-</span>
+            </div>
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">ETA:</span>
+                <span class="driver-popover__val driver-popover__val--eta" id="pop-driver-eta">-</span>
+            </div>
+            <div class="driver-popover__row">
+                <span class="driver-popover__label">Distance:</span>
+                <span class="driver-popover__val" id="pop-driver-dist">-</span>
+            </div>
+        </div>
+    </div>
+
+    <dialog id="master-status-dialog" class="req-dialog">
+        <form id="master-status-form">
             <div class="req-dialog__head">
-                <span class="req-dialog__title">Manage Request Status</span>
-                <button type="button" class="req-dialog__close" data-status-dialog-close aria-label="Close">×</button>
+                <span class="req-dialog__title">Master Control: Change Status</span>
+                <button type="button" class="req-dialog__close" data-master-status-close aria-label="Close">×</button>
             </div>
             <div class="req-dialog__body">
-                <label class="req-dialog__label" for="status-request">Request</label>
-                <select class="req-dialog__select" id="status-request" name="request_id" required>
-                    @foreach ($requests as $request)
-                        <option value="{{ $request->id }}">{{ $request->reference }} · {{ $request->customer_name }}</option>
-                    @endforeach
-                </select>
-
-                <label class="req-dialog__label" for="status-value">Move to</label>
-                <select class="req-dialog__select" id="status-value" name="status" required>
-                    <option value="new">New Request (reset)</option>
-                    <option value="awaiting_responses">Request Sent to Drivers</option>
-                    <option value="driver_accepted">Accepted (In Progress)</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="closed">Journey Completed</option>
-                </select>
+                <p style="margin: 0 0 12px; font-size: 13px; color: var(--color-text-secondary);">
+                    Select new status for <strong id="master-status-req-ref" style="color: var(--color-text-primary);">-</strong>:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <label class="accepted-driver-option">
+                        <input type="radio" name="master_status" value="new">
+                        <span class="accepted-driver-option__details">
+                            <strong>New Request</strong>
+                            <span class="accepted-driver-option__meta">Tab 1 (Requests) · Stage 1</span>
+                        </span>
+                    </label>
+                    <label class="accepted-driver-option">
+                        <input type="radio" name="master_status" value="awaiting_responses">
+                        <span class="accepted-driver-option__details">
+                            <strong>Request Sent to Driver</strong>
+                            <span class="accepted-driver-option__meta">Tab 1 (Requests) · Stage 2</span>
+                        </span>
+                    </label>
+                    <label class="accepted-driver-option">
+                        <input type="radio" name="master_status" value="driver_accepted">
+                        <span class="accepted-driver-option__details">
+                            <strong>Driver Accepts</strong>
+                            <span class="accepted-driver-option__meta">Tab 1 (Requests) · Stage 3</span>
+                        </span>
+                    </label>
+                    <label class="accepted-driver-option">
+                        <input type="radio" name="master_status" value="confirmed">
+                        <span class="accepted-driver-option__details">
+                            <strong>Active (Confirmed)</strong>
+                            <span class="accepted-driver-option__meta">Tab 2 (Active Requests)</span>
+                        </span>
+                    </label>
+                    <label class="accepted-driver-option">
+                        <input type="radio" name="master_status" value="closed">
+                        <span class="accepted-driver-option__details">
+                            <strong>Completed</strong>
+                            <span class="accepted-driver-option__meta">Tab 3 (Completed Requests)</span>
+                        </span>
+                    </label>
+                </div>
             </div>
             <div class="req-dialog__foot">
-                <button type="button" class="btn btn--quiet" data-status-dialog-close>Cancel</button>
+                <button type="button" class="btn btn--quiet" data-master-status-close>Cancel</button>
                 <button class="btn btn--primary" type="submit">Update Status</button>
             </div>
         </form>
@@ -110,34 +131,36 @@
 
     @php
         $columns = [
-            'new' => [
-                'title' => 'New Request',
-                'statuses' => ['new', 'ready_to_match'],
+            'new_requests' => [
+                'title' => 'Requests',
+                'stages' => [
+                    ['key' => 'new', 'label' => 'New Request', 'statuses' => ['new', 'ready_to_match']],
+                    ['key' => 'awaiting_responses', 'label' => 'Request Sent to Driver', 'statuses' => ['invitations_sent', 'awaiting_responses']],
+                    ['key' => 'driver_accepted', 'label' => 'Driver Accepts', 'statuses' => ['driver_accepted', 'follow_up_needed']],
+                ],
             ],
-            'sent' => [
-                'title' => 'Request Sent to Drivers',
-                'statuses' => ['invitations_sent', 'awaiting_responses'],
+            'active_requests' => [
+                'title' => 'Active Requests',
+                'stages' => [
+                    ['key' => 'confirmed', 'label' => 'Confirm', 'statuses' => ['confirmed']],
+                ],
             ],
-            'in_progress' => [
-                'title' => 'Drivers Accepted the Request',
-                'statuses' => ['driver_accepted', 'follow_up_needed'],
-            ],
-            'confirmed' => [
-                'title' => 'Confirmed',
-                'statuses' => ['confirmed'],
-            ],
-            'journey_completed' => [
-                'title' => 'Journey Completed',
-                'statuses' => ['closed', 'cancelled', 'no_driver_available'],
+            'completed_requests' => [
+                'title' => 'Completed Requests',
+                'stages' => [
+                    ['key' => 'closed', 'label' => 'Completed', 'statuses' => ['closed', 'cancelled', 'no_driver_available']],
+                ],
             ],
         ];
 
+        foreach ($columns as $colKey => $colDef) {
+            $columns[$colKey]['statuses'] = collect($colDef['stages'])->pluck('statuses')->flatten()->all();
+        }
+
         $groupedRequests = [
-            'new' => collect(),
-            'sent' => collect(),
-            'in_progress' => collect(),
-            'confirmed' => collect(),
-            'journey_completed' => collect(),
+            'new_requests' => collect(),
+            'active_requests' => collect(),
+            'completed_requests' => collect(),
         ];
 
         foreach ($requests as $req) {
@@ -150,278 +173,261 @@
                 }
             }
             if (! $assigned) {
-                $groupedRequests['new']->push($req);
+                $groupedRequests['new_requests']->push($req);
             }
         }
     @endphp
 
-    <section class="kanban-section" aria-label="Transport requests kanban board">
-        @if ($requests->isEmpty())
-            <div class="panel empty-state">
-                <p class="empty-state__title">No requests found</p>
-                <p class="empty-state__text">
-                    @if ($q !== '' || $status !== '')
-                        No requests match these filters.
-                        <a class="text-link" href="{{ route('requests.index') }}">Clear filters</a>
-                    @else
-                        New customer requests will appear here as they arrive.
-                    @endif
-                </p>
-            </div>
-        @else
-            <div class="kanban-board">
+    <section class="kanban-section request-manager" aria-label="Transport requests">
+        {{-- Rectangular Segmented Stepper tab switcher --}}
+        <div class="req-stepper" role="tablist" aria-label="Request lifecycle">
+            <div class="req-stepper__glider" id="req-stepper-glider"></div>
+            @foreach ($columns as $tabKey => $tab)
+                <button type="button" class="req-stepper__tab {{ $loop->first ? 'is-active' : '' }}" role="tab" data-request-tab="{{ $tabKey }}" aria-selected="{{ $loop->first ? 'true' : 'false' }}">
+                    {{ $tab['title'] }}<span class="req-stepper__badge">{{ $groupedRequests[$tabKey]->count() }}</span>
+                </button>
+            @endforeach
+        </div>
+
+        {{-- One unified WA-style box: left sidebar + right detail pane --}}
+        <div class="req-workspace">
+            {{-- LEFT: scrollable card list --}}
+            <div class="req-sidebar">
                 @foreach ($columns as $colKey => $col)
-                    @php
-                        $items = $groupedRequests[$colKey];
-                    @endphp
-                    <div class="kanban-column" data-column="{{ $colKey }}" id="kanban-col-{{ $colKey }}">
-                        <div class="kanban-column__head">
-                            <div class="kanban-column__title-wrap">
-                                <h2 class="kanban-column__title">{{ $col['title'] }}</h2>
+                    @php $items = $groupedRequests[$colKey]; @endphp
+                    <div class="req-sidebar__group" data-column="{{ $colKey }}" id="kanban-col-{{ $colKey }}">
+                        @forelse ($items as $request)
+                            <div class="req-card request-row"
+                                id="req-card-{{ $request->reference }}"
+                                data-request-id="{{ $request->reference }}"
+                                data-db-id="{{ $request->id }}"
+                                data-status="{{ $request->status }}"
+                                data-pickup="{{ $request->pickup_city }}"
+                                data-pickup-address="{{ $request->pickup_address }}"
+                                data-destination="{{ $request->destination_city }}"
+                                data-destination-address="{{ $request->destination_address }}"
+                                data-goods="{{ $request->goods_category }}"
+                                data-goods-desc="{{ $request->goods_description }}"
+                                data-weight="{{ number_format($request->weight_kg) }}"
+                                data-quantity="{{ $request->quantity }}"
+                                data-customer="{{ $request->customer_name }}"
+                                data-phone="{{ $request->customer_phone }}"
+                                data-email="{{ $request->customer_email }}"
+                                data-vehicle="{{ $request->vehicle_type_needed }}"
+                                data-fragile="{{ $request->is_fragile ? 'Yes' : 'No' }}"
+                                data-loading="{{ $request->needs_loading_help ? 'Required' : 'Not required' }}"
+                                data-instructions="{{ $request->special_instructions }}"
+                                data-date="{{ $request->preferred_date ? \Carbon\Carbon::parse($request->preferred_date)->format('d M Y') : '' }}"
+                                @php
+                                    $acceptedDriversList = $request->invitations->where('response_status', 'accepted')->map(fn ($invitation) => [
+                                        'id' => $invitation->driver_id,
+                                        'name' => $invitation->driver?->name,
+                                        'phone' => $invitation->driver?->phone,
+                                        'vehicle' => $invitation->driver?->vehicle_type,
+                                        'registration' => $invitation->driver?->registration_number,
+                                    ])->values();
+
+                                    if ($acceptedDriversList->isEmpty()) {
+                                        $suresh = $availableDrivers->firstWhere('name', 'Suresh Patel');
+                                        $acceptedDriversList = collect([[
+                                            'id' => $suresh?->id ?? 1,
+                                            'name' => 'Suresh Patel',
+                                            'phone' => $suresh?->phone ?? '+91 98263 11001',
+                                            'vehicle' => $suresh?->vehicle_type ?? 'Tata 407',
+                                            'registration' => $suresh?->registration_number ?? 'MP09 AB 1234',
+                                        ]]);
+                                    }
+                                @endphp
+                                data-accepted-drivers="{{ $acceptedDriversList->toJson() }}"
+                                data-sent-drivers="{{ $request->invitations->map(fn ($invitation) => ['name' => $invitation->driver?->name, 'phone' => $invitation->driver?->phone, 'vehicle' => $invitation->driver?->vehicle_type, 'registration' => $invitation->driver?->registration_number])->values()->toJson() }}"
+                                data-confirmed-drivers="{{ $request->invitations->where('response_status', 'accepted')->map(fn ($invitation) => ['name' => $invitation->driver?->name, 'phone' => $invitation->driver?->phone, 'vehicle' => $invitation->driver?->vehicle_type, 'registration' => $invitation->driver?->registration_number])->values()->toJson() }}"
+                                data-accepted-demo="{{ $request->reference === 'TRQ-2026-0143' ? 'true' : 'false' }}"
+                                role="button"
+                                tabindex="0">
+                                <div class="req-card__top">
+                                    <span class="req-card__name">{{ $request->customer_name }}</span>
+                                    @php
+                                        $wDisp = $request->weight_kg >= 1000 ? round($request->weight_kg / 1000, 1) . ' ton' : number_format($request->weight_kg) . ' kg';
+                                    @endphp
+                                    <span class="req-card__weight">{{ $wDisp }}</span>
+                                </div>
+                                <div class="req-card__route">
+                                    <span class="req-card__city">{{ $request->pickup_city }}</span>
+                                    <span class="req-card__arrow">→</span>
+                                    <span class="req-card__city">{{ $request->destination_city }}</span>
+                                </div>
                             </div>
-                            <span class="kanban-column__count">{{ $items->count() }}</span>
-                        </div>
-
-                        <div class="kanban-column__body">
-                            @forelse ($items as $request)
-                                <div class="kanban-card request-row"
-                                    id="req-card-{{ $request->reference }}"
-                                    data-request-id="{{ $request->reference }}"
-                                    data-db-id="{{ $request->id }}"
-                                    data-status="{{ $request->status }}"
-                                    data-pickup="{{ $request->pickup_city }}"
-                                    data-pickup-address="{{ $request->pickup_address }}"
-                                    data-destination="{{ $request->destination_city }}"
-                                    data-destination-address="{{ $request->destination_address }}"
-                                    data-goods="{{ $request->goods_category }}"
-                                    data-goods-desc="{{ $request->goods_description }}"
-                                    data-weight="{{ number_format($request->weight_kg) }}"
-                                    data-quantity="{{ $request->quantity }}"
-                                    data-customer="{{ $request->customer_name }}"
-                                    data-phone="{{ $request->customer_phone }}"
-                                    data-email="{{ $request->customer_email }}"
-                                    data-vehicle="{{ $request->vehicle_type_needed }}"
-                                    data-fragile="{{ $request->is_fragile ? 'Yes' : 'No' }}"
-                                    data-loading="{{ $request->needs_loading_help ? 'Required' : 'Not required' }}"
-                                    data-instructions="{{ $request->special_instructions }}"
-                                    data-date="{{ $request->preferred_date ? \Carbon\Carbon::parse($request->preferred_date)->format('d M Y') : '' }}"
-                                    data-accepted-drivers="{{ $request->invitations->where('response_status', 'accepted')->map(fn ($invitation) => ['id' => $invitation->driver_id, 'name' => $invitation->driver?->name, 'phone' => $invitation->driver?->phone, 'vehicle' => $invitation->driver?->vehicle_type, 'registration' => $invitation->driver?->registration_number])->values()->toJson() }}"
-                                    data-sent-drivers="{{ $request->invitations->map(fn ($invitation) => ['name' => $invitation->driver?->name, 'phone' => $invitation->driver?->phone, 'vehicle' => $invitation->driver?->vehicle_type, 'registration' => $invitation->driver?->registration_number])->values()->toJson() }}"
-                                    data-confirmed-drivers="{{ $request->invitations->where('response_status', 'accepted')->map(fn ($invitation) => ['name' => $invitation->driver?->name, 'phone' => $invitation->driver?->phone, 'vehicle' => $invitation->driver?->vehicle_type, 'registration' => $invitation->driver?->registration_number])->values()->toJson() }}"
-                                    data-accepted-demo="{{ $request->reference === 'TRQ-2026-0143' ? 'true' : 'false' }}"
-                                    draggable="true"
-                                    role="button"
-                                    tabindex="0">
-                                    <div class="kanban-card__top">
-                                        <div class="kanban-card__identity">
-                                            <span class="kanban-card__ref">{{ $request->reference }}</span>
-                                            <span class="kanban-card__customer">{{ $request->customer_name }}</span>
-                                        </div>
-                                    <x-status-badge :status="$request->status" class="kanban-card__badge" />
-                                    </div>
-
-                                    <div class="kanban-card__route">
-                                        <div class="kanban-card__route-cities">
-                                            <span class="kanban-card__city">{{ $request->pickup_city }}</span>
-                                            <span class="kanban-card__arrow" aria-hidden="true">→</span>
-                                            <span class="kanban-card__city">{{ $request->destination_city }}</span>
-                                        </div>
-                                        <span class="kanban-card__sub">{{ $request->pickup_address }} to {{ $request->destination_address }}</span>
-                                    </div>
-
-                                    <div class="kanban-card__footer">
-                                        <div class="kanban-card__meta-item">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                                                <line x1="12" y1="22.08" x2="12" y2="12"/>
-                                            </svg>
-                                            <span class="kanban-card__goods-label" title="{{ $request->goods_description }}">
-                                                {{ $request->goods_category }}@if ($request->is_fragile) · Fragile @endif
-                                            </span>
-                                        </div>
-                                        <div class="kanban-card__load">
-                                            <span class="kanban-card__weight">{{ number_format($request->weight_kg) }} kg</span>
-                                            <span class="kanban-card__dot">·</span>
-                                            <span class="kanban-card__qty">{{ $request->quantity }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="kanban-column__empty">
-                                    <span>No requests</span>
-                                </div>
-                            @endforelse
-                        </div>
+                        @empty
+                            {{-- empty group, nothing shown --}}
+                        @endforelse
                     </div>
                 @endforeach
+
+                @if ($requests->isEmpty())
+                    <div class="req-sidebar__empty-state">
+                        @if ($q !== '' || $status !== '')
+                            No requests match these filters.
+                            <a class="text-link" href="{{ route('requests.index') }}">Clear</a>
+                        @else
+                            No requests yet.
+                        @endif
+                    </div>
+                @endif
             </div>
-        @endif
+
+            {{-- RIGHT: detail pane --}}
+            <div id="request-details-panel" class="request-details-panel">
+                <div class="request-details-empty">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                    </svg>
+                    <p>Select a request to view details</p>
+                </div>
+            </div>
+        </div>
     </section>
     <!-- Find Drivers modal -->
     <div id="findDriversModal" class="fd-overlay" hidden>
         <div class="fd-modal" role="dialog" aria-modal="true" aria-labelledby="fd-title">
             <header class="fd-modal__head">
                 <div class="fd-modal__head-info">
-                    <span class="fd-modal__tag" id="fd-tag">Request</span>
                     <h2 id="fd-title" class="fd-modal__title">Find Drivers & Assign</h2>
                     <p class="fd-modal__sub" id="fd-sub">Select available nearby drivers</p>
                 </div>
                 <div class="fd-modal__head-actions">
-                    <div class="fd-toolbar-inline">
-                        <label class="fd-label" for="fd-count">Consider:</label>
-                        <select id="fd-count" class="fd-select">
-                            <option value="5" selected>5 drivers</option>
-                            <option value="10">10 drivers</option>
-                            <option value="15">15 drivers</option>
-                            <option value="20">20 drivers</option>
-                            <option value="25">25 drivers</option>
-                            <option value="30">30 drivers</option>
-                        </select>
-                    </div>
                     <button type="button" class="fd-close" data-fd-close aria-label="Close">×</button>
                 </div>
             </header>
 
-            <div class="fd-body">
-                <!-- Left half: Full information of the request -->
-                <aside class="fd-req-panel" id="fd-req-panel">
-                    <div class="fd-req-panel__head">
-                        <span class="fd-req-panel__label">Request Details</span>
-                        <span class="status-badge" id="fd-info-status">New</span>
+            <div class="fd-body fd-bento-body">
+                <!-- Top Bento Row: Map (left) + Drivers List (right) -->
+                <div class="fd-bento-top">
+                    <!-- Left: Compact Map Card -->
+                    <div class="fd-bento-card fd-bento-card--map">
+                        <div class="fd-bento-card__head">
+                            <span class="fd-bento-card__title">Route Map</span>
+                            <span id="fd-info-status" class="status-badge status-badge--new">New Request</span>
+                        </div>
+                        <div class="fd-map-wrap">
+                            <div id="fd-map" class="fd-map" aria-label="Google Maps navigation view"></div>
+                            <!-- Floating Map Legend -->
+                            <div class="fd-map-legend" role="region" aria-label="Route Hierarchy Legend" id="fd-legend" data-collapsed>
+                                <button type="button" class="fd-legend-toggle" id="fd-legend-toggle" aria-expanded="false" aria-controls="fd-legend-items">
+                                    <span class="fd-legend-title">Route System</span>
+                                    <span class="fd-legend-chevron" aria-hidden="true">▾</span>
+                                </button>
+                                <div class="fd-legend-items" id="fd-legend-items">
+                                    <button type="button" class="fd-legend-item" data-layer="delivery">
+                                        <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--delivery"></span></span>
+                                        <span class="fd-legend-label">Main delivery route</span>
+                                    </button>
+                                    <button type="button" class="fd-legend-item" data-layer="nearest">
+                                        <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--nearest"></span></span>
+                                        <span class="fd-legend-label">Nearest available truck</span>
+                                    </button>
+                                    <button type="button" class="fd-legend-item" data-layer="others">
+                                        <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--other"></span></span>
+                                        <span class="fd-legend-label">Other available trucks (4)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="fd-req-panel__content">
-                        <!-- Route Card -->
-                        <div class="fd-info-card">
-                            <span class="fd-info-card__title">Route & Locations</span>
-                            <div class="fd-route-points">
-                                <div class="fd-route-point">
-                                    <span class="fd-route-bullet fd-route-bullet--src"></span>
-                                    <div class="fd-route-details">
-                                        <span class="fd-route-city" id="fd-info-pickup-city">Pickup City</span>
-                                        <span class="fd-route-address" id="fd-info-pickup-address">Pickup Address</span>
+                    <!-- Right: Drivers List or Confirmed Driver Details -->
+                    <div class="fd-bento-card fd-bento-card--drivers fd-list-wrap">
+                        <!-- Candidate Drivers List View (for New / Sent / Accepted Requests) -->
+                        <div class="fd-candidate-drivers-section" id="fd-candidate-drivers-section">
+                            <div class="fd-list-head">
+                                <button type="button" class="fd-select-all-btn" id="fd-select-all" title="Select all" aria-label="Select all">
+                                    <svg class="icon-unchecked" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" stroke="currentColor" stroke-width="2.2"/>
+                                    </svg>
+                                    <svg class="icon-checked" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <rect x="3" y="3" width="18" height="18" rx="5" fill="currentColor"/>
+                                        <path d="M7.5 12.5l3 3 6-6.5" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                                <span class="fd-list-head__title">Select All</span>
+                            </div>
+                            <ul id="fd-list" class="fd-list"></ul>
+                            <footer class="fd-footer">
+                                <button type="button" class="fd-send" id="fd-send" disabled>Send Request</button>
+                            </footer>
+                        </div>
+
+                        <!-- Confirmed Driver Details View (for Active / Confirmed Requests) -->
+                        <div class="fd-confirmed-driver-section" id="fd-confirmed-driver-section" hidden>
+                            <div class="fd-list-head">
+                                <span class="fd-list-head__title">Confirmed Driver</span>
+                                <span class="status-badge status-badge--confirmed">Assigned</span>
+                            </div>
+                            <div class="fd-confirmed-driver-body">
+                                <div class="fd-confirmed-card">
+                                    <div class="fd-confirmed-card__head">
+                                        <div class="fd-confirmed-avatar">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="12" cy="7" r="4"/>
+                                            </svg>
+                                        </div>
+                                        <div class="fd-confirmed-name-wrap">
+                                            <span class="fd-confirmed-name" id="fd-conf-driver-name">Suresh Patel</span>
+                                            <span class="fd-confirmed-status-text">Driver En Route</span>
+                                        </div>
+                                    </div>
+                                    <div class="fd-confirmed-grid">
+                                        <div class="fd-confirmed-item">
+                                            <span class="fd-confirmed-item__label">Phone Number</span>
+                                            <span class="fd-confirmed-item__val" id="fd-conf-driver-phone">+91 98263 11001</span>
+                                        </div>
+                                        <div class="fd-confirmed-item">
+                                            <span class="fd-confirmed-item__label">Vehicle</span>
+                                            <span class="fd-confirmed-item__val" id="fd-conf-driver-vehicle">Tata 407</span>
+                                        </div>
+                                        <div class="fd-confirmed-item">
+                                            <span class="fd-confirmed-item__label">Registration</span>
+                                            <span class="fd-confirmed-item__val" id="fd-conf-driver-reg">MP09 AB 1234</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="fd-route-line"></div>
-                                <div class="fd-route-point">
-                                    <span class="fd-route-bullet fd-route-bullet--dst"></span>
-                                    <div class="fd-route-details">
-                                        <span class="fd-route-city" id="fd-info-dst-city">Destination City</span>
-                                        <span class="fd-route-address" id="fd-info-dst-address">Destination Address</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Customer Details -->
-                        <div class="fd-info-card">
-                            <span class="fd-info-card__title">Customer</span>
-                            <div class="fd-info-grid">
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Name</span>
-                                    <span class="fd-info-field__val" id="fd-info-customer">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Phone</span>
-                                    <span class="fd-info-field__val" id="fd-info-phone">-</span>
-                                </div>
-                                <div class="fd-info-field fd-info-field--full">
-                                    <span class="fd-info-field__label">Email</span>
-                                    <span class="fd-info-field__val" id="fd-info-email">-</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Cargo & Vehicle -->
-                        <div class="fd-info-card">
-                            <span class="fd-info-card__title">Cargo & Vehicle Specs</span>
-                            <div class="fd-info-grid">
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Category</span>
-                                    <span class="fd-info-field__val" id="fd-info-goods">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Load / Weight</span>
-                                    <span class="fd-info-field__val" id="fd-info-load">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Vehicle Needed</span>
-                                    <span class="fd-info-field__val" id="fd-info-vehicle">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Preferred Date</span>
-                                    <span class="fd-info-field__val" id="fd-info-date">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Fragile</span>
-                                    <span class="fd-info-field__val" id="fd-info-fragile">-</span>
-                                </div>
-                                <div class="fd-info-field">
-                                    <span class="fd-info-field__label">Loading Help</span>
-                                    <span class="fd-info-field__val" id="fd-info-loading">-</span>
-                                </div>
-                                <div class="fd-info-field fd-info-field--full" id="fd-info-desc-wrap">
-                                    <span class="fd-info-field__label">Cargo Description</span>
-                                    <span class="fd-info-field__val" id="fd-info-desc">-</span>
-                                </div>
-                                <div class="fd-info-field fd-info-field--full" id="fd-info-instructions-wrap">
-                                    <span class="fd-info-field__label">Special Instructions</span>
-                                    <span class="fd-info-field__val fd-info-field__val--note" id="fd-info-instructions">-</span>
-                                </div>
                             </div>
                         </div>
                     </div>
-                </aside>
+                </div>
 
-                <!-- Right half: Map upside and driver list below it -->
-                <div class="fd-dispatch-col">
-                    <!-- Map on upper part -->
-                    <div class="fd-map-wrap">
-                        <div id="fd-map" class="fd-map" aria-label="Google Maps navigation view"></div>
-                        <!-- Floating Map Legend -->
-                        <div class="fd-map-legend" role="region" aria-label="Route Hierarchy Legend" id="fd-legend" data-collapsed>
-                            <button type="button" class="fd-legend-toggle" id="fd-legend-toggle" aria-expanded="false" aria-controls="fd-legend-items">
-                                <span class="fd-legend-title">Route System</span>
-                                <span class="fd-legend-chevron" aria-hidden="true">▾</span>
-                            </button>
-                            <div class="fd-legend-items" id="fd-legend-items">
-                                <button type="button" class="fd-legend-item" data-layer="delivery">
-                                    <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--delivery"></span></span>
-                                    <span class="fd-legend-label">Main delivery route</span>
-                                </button>
-                                <button type="button" class="fd-legend-item" data-layer="nearest">
-                                    <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--nearest"></span></span>
-                                    <span class="fd-legend-label">Nearest available truck</span>
-                                </button>
-                                <button type="button" class="fd-legend-item" data-layer="others">
-                                    <span class="fd-legend-casing"><span class="fd-legend-line fd-legend-line--other"></span></span>
-                                    <span class="fd-legend-label">Other available trucks (4)</span>
-                                </button>
+                <!-- Bottom Bento Section: Customer Details Cards -->
+                <div class="fd-bento-bottom">
+                    <div class="fd-bento-grid">
+                        <div class="fd-bento-item">
+                            <span class="fd-bento-item__label">Customer</span>
+                            <span class="fd-bento-item__val" id="fd-info-customer">-</span>
+                        </div>
+                        <div class="fd-bento-item">
+                            <span class="fd-bento-item__label">Phone Number</span>
+                            <span class="fd-bento-item__val" id="fd-info-phone">-</span>
+                        </div>
+                        <div class="fd-bento-item">
+                            <span class="fd-bento-item__label">Source</span>
+                            <div class="fd-route-details">
+                                <span class="fd-route-city" id="fd-info-pickup-city">Pickup City</span>
+                                <span class="fd-route-address" id="fd-info-pickup-address">Pickup Address</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Driver list on bottom part with same width -->
-                    <div class="fd-list-wrap">
-                        <div class="fd-list-head">
-                            <button type="button" class="fd-select-all-btn" id="fd-select-all" title="Select all" aria-label="Select all">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                    <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="2"/>
-                                    <path d="M7.5 12.5l3 3 6-6.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                            <span class="fd-list-head__title">Available Drivers Nearby</span>
+                        <div class="fd-bento-item">
+                            <span class="fd-bento-item__label">Destination</span>
+                            <div class="fd-route-details">
+                                <span class="fd-route-city" id="fd-info-dst-city">Destination City</span>
+                                <span class="fd-route-address" id="fd-info-dst-address">Destination Address</span>
+                            </div>
                         </div>
-                        <ul id="fd-list" class="fd-list"></ul>
+                        <div class="fd-bento-item">
+                            <span class="fd-bento-item__label">Weight</span>
+                            <span class="fd-bento-item__val" id="fd-info-load">-</span>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <footer class="fd-footer">
-                <span id="fd-selected" class="fd-selected">0 selected</span>
-                <button type="button" class="fd-send" id="fd-send" disabled>Send Request</button>
-            </footer>
         </div>
     </div>
     <div id="fd-toast" class="fd-toast" hidden>
@@ -430,272 +436,935 @@
     </div>
 
     <style>
-        /* This board needs the full workspace width, especially when the sidebar is collapsed. */
+        /* ── Page shell: static viewport, no window scroll ─────────────────── */
         .page-main:has(.kanban-section) {
             max-width: none;
             margin: 0;
-            padding: 24px 20px var(--space-16);
+            padding: 16px 20px 16px;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .page-head {
+            margin-bottom: 10px;
+            flex-shrink: 0;
         }
 
-        /* Kanban Board layout */
+        /* ── Section wrapper ────────────────────────────────────────────────── */
         .kanban-section {
             width: 100%;
-        }
-
-        .kanban-board {
-            display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
-            gap: 10px;
-            align-items: stretch;
-        }
-
-        .kanban-column {
-            background-color: var(--color-bg);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-md);
-            display: flex;
-            flex-direction: column;
-            min-height: 560px;
-            overflow: hidden;
-        }
-
-        .kanban-column__head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 14px;
-            min-height: 54px;
-            background-color: var(--color-surface-muted);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .kanban-column__title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-        }
-
-        .kanban-column__title {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            line-height: 1.2;
-            margin: 0;
-        }
-
-        .kanban-column__count {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            padding: 0 6px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            background-color: var(--color-white);
-            border: 1px solid var(--color-border);
-            border-radius: 999px;
-        }
-
-        .kanban-column__body {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 12px;
             flex: 1;
-            min-height: 200px;
-        }
-
-        .kanban-column__empty {
-            display: grid;
-            place-items: center;
-            height: 120px;
-            color: var(--color-text-muted);
-            font-size: 12.5px;
-            border: 1px dashed var(--color-border);
-            border-radius: var(--radius-sm);
-            background: rgba(255, 255, 255, 0.4);
-        }
-
-        /* Minimal clean Kanban Card - simple white */
-        .kanban-card {
-            background-color: var(--color-white);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
-            cursor: pointer;
+            min-height: 0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            transition: all var(--motion-fast) var(--ease-standard);
-            outline: none;
-            text-align: left;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-
-        .kanban-card:hover {
-            background-color: var(--color-white);
-            border-color: #b5c7bd;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            transform: translateY(-1px);
-        }
-
-        .kanban-card:focus-visible {
-            border-color: var(--color-brand-primary);
-            box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
-        }
-
-        .kanban-card__top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .kanban-card__identity {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .kanban-card__ref {
-            font-size: 13.5px;
-            font-weight: 500;
-            color: var(--color-text-primary);
-            letter-spacing: -0.01em;
-        }
-
-        .kanban-card__customer {
-            font-size: 12px;
-            color: var(--color-text-muted);
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .kanban-card__top .status-badge {
-            font-size: 10.5px;
-            height: 20px;
-            padding: 0 7px;
-            flex-shrink: 0;
-        }
-
-        .kanban-card__route {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            padding: 6px 8px;
-            background: color-mix(in srgb, var(--color-surface-muted) 70%, transparent);
-            border-radius: 4px;
-        }
-
-        .kanban-card__route-cities {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--color-text-primary);
-        }
-
-        .kanban-card__arrow {
-            color: var(--color-brand-primary);
-            font-size: 12px;
-        }
-
-        .kanban-card__sub {
-            font-size: 11.5px;
-            color: var(--color-text-muted);
-            line-height: 1.35;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .kanban-card__footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding-top: 4px;
-            border-top: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
-            font-size: 11.5px;
-            color: var(--color-text-secondary);
-        }
-
-        .kanban-card__meta-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            min-width: 0;
-            color: var(--color-text-secondary);
-        }
-
-        .kanban-card__goods-label {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 130px;
-        }
-
-        .kanban-card__load {
+        /* ── Rectangular Segmented Stepper Control ───────────────────────── */
+        .req-stepper {
+            position: relative;
             display: inline-flex;
             align-items: center;
+            align-self: flex-start;
             gap: 4px;
+            padding: 4px;
+            margin-bottom: 12px;
             flex-shrink: 0;
-            font-size: 11.5px;
-            color: var(--color-text-muted);
+            background: #f1f5f9;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
         }
 
-        .kanban-card__weight {
-            font-weight: 500;
+        /* The animated sliding indicator */
+        .req-stepper__glider {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            height: calc(100% - 8px);
+            background: #ffffff;
+            border-radius: 7px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+            transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), width 220ms cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .req-stepper__tab {
+            position: relative;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 0;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--color-text-secondary);
+            padding: 7px 16px;
+            font: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: color 180ms ease;
+        }
+
+        .req-stepper__tab:hover {
             color: var(--color-text-primary);
         }
 
-        .kanban-card__dot {
-            opacity: 0.6;
+        .req-stepper__tab.is-active {
+            color: var(--color-brand-primary);
         }
 
-        @media (max-width: 900px) {
-            .kanban-board {
-                grid-template-columns: repeat(2, minmax(280px, 1fr));
-            }
+        .req-stepper__badge {
+            display: inline-grid;
+            place-items: center;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 6px;
+            border-radius: 5px;
+            background: color-mix(in srgb, var(--color-border) 70%, transparent);
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--color-text-secondary);
+            transition: background 180ms ease, color 180ms ease;
         }
 
-        @media (max-width: 640px) {
-            .kanban-board {
-                grid-template-columns: 1fr;
-            }
+        .req-stepper__tab.is-active .req-stepper__badge {
+            background: var(--color-brand-soft);
+            color: var(--color-brand-strong);
         }
 
-        /* Page actions: expanding search + filters button */
-        .req-actions { display: flex; align-items: center; gap: 8px; flex: none; position: relative; }
-        .req-status-btn {
-            border: 1px solid var(--color-brand-primary);
+        .req-stage-tabs {
+            display: none;
+            align-items: center;
+            align-self: flex-start;
+            gap: 6px;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .req-stage-tabs.is-visible { display: inline-flex; }
+        .req-stage-tab {
+            border: 1px solid var(--color-border);
             border-radius: 999px;
-            background: var(--color-brand-primary);
-            color: #fff;
-            padding: 8px 13px;
+            background: #fff;
+            color: var(--color-text-secondary);
+            padding: 5px 12px;
             font: inherit;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             white-space: nowrap;
         }
-        .req-status-btn:hover { background: var(--color-brand-strong); }
-        .req-status-dialog .req-dialog__body { gap: 10px; }
-        .accepted-driver-option {
+        .req-stage-tab:hover { color: var(--color-text-primary); }
+        .req-stage-tab.is-active {
+            border-color: var(--color-brand-primary);
+            background: var(--color-brand-soft);
+            color: var(--color-brand-strong);
+        }
+
+        /* ── One unified workspace box (WhatsApp layout) ─────────────────────── */
+        .req-workspace {
+            display: grid;
+            grid-template-columns: 300px minmax(0, 1fr);
+            flex: 1;
+            min-height: 0;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        /* ── LEFT sidebar: list of request cards ──────────────────────────── */
+        .req-sidebar {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--color-border);
+            background: #ffffff;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+            min-height: 0;
+        }
+        .req-sidebar::-webkit-scrollbar { width: 4px; }
+        .req-sidebar::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+
+        .req-sidebar__group { display: none; }
+        .req-sidebar__group.is-visible { display: block; }
+
+        .req-sidebar__empty-state {
+            padding: 32px 20px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            text-align: center;
+        }
+
+        /* ── Request card (WA-row style) ──────────────────────────────────── */
+        .req-card.is-stage-hidden { display: none; }
+        .req-card {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 13px 16px;
+            border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
+            cursor: pointer;
+            transition: background 120ms ease;
+            outline: none;
+            background: #ffffff;
+            text-align: left;
+            position: relative;
+        }
+        .req-card:hover {
+            background: color-mix(in srgb, var(--color-brand-soft) 40%, transparent);
+        }
+        .req-card:focus-visible {
+            outline: 2px solid var(--color-brand-primary);
+            outline-offset: -2px;
+        }
+        .req-card.is-selected {
+            background: var(--color-brand-soft);
+            border-right: 3px solid var(--color-brand-primary);
+        }
+        .req-card.is-selected::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--color-brand-primary);
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Card rows */
+        .req-card__top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .req-card__name {
+            font-size: 14px;
+            font-weight: 650;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            min-width: 0;
+        }
+        .req-card__weight {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .req-card__route {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12.5px;
+            color: var(--color-text-secondary);
+            font-weight: 400;
+        }
+        .req-card__arrow {
+            color: var(--color-brand-primary);
+            font-size: 11px;
+        }
+        .req-card__city {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+        .req-card__bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .req-card__ref {
+            font-size: 10.5px;
+            color: var(--color-text-muted);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+        .req-card__goods {
+            font-size: 10.5px;
+            color: var(--color-text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── RIGHT detail panel ─────────────────────────────────────────────── */
+        .request-details-panel {
+            min-width: 0;
+            height: 100%;
+            min-height: 0;
+            background: #fff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .request-details-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            height: 100%;
+            padding: 32px;
+            color: var(--color-text-secondary);
+            text-align: center;
+            font-size: 13px;
+        }
+        .request-details-empty p { margin: 0; }
+
+        /* fd-overlay/fd-modal embedded in detail panel */
+        .request-details-panel .fd-overlay {
+            position: static;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            background: none;
+            backdrop-filter: none;
+            height: 100%;
+            min-height: 0;
+            width: 100%;
+        }
+        .request-details-panel .fd-modal {
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            max-height: none;
+            border-radius: 0;
+            box-shadow: none;
+            display: flex;
+            flex-direction: column;
+        }
+        .request-details-panel .fd-close { display: none; }
+
+        /* ── fd-modal header (compact) ──────────────────────────────────────── */
+        .fd-modal__head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--color-border);
+            background: #ffffff;
+            flex-shrink: 0;
+        }
+        .fd-modal__head-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+        .fd-modal__tag {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            background: var(--color-brand-soft);
+            color: var(--color-brand-strong);
+            border-radius: 4px;
+        }
+        .fd-modal__title {
+            font-size: 14px;
+            font-weight: 650;
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+        .fd-modal__sub { display: none; }
+        .fd-modal__head-actions {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 11px;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
+        }
+        .fd-toolbar-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .fd-close {
+            background: none;
+            border: none;
+            font-size: 20px;
             cursor: pointer;
+            color: var(--color-text-secondary);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .fd-close:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
+        .fd-label { font-size: 11.5px; font-weight: 500; color: var(--color-text-secondary); }
+        .fd-select {
+            padding: 3px 6px;
+            border: 1px solid var(--color-border);
+            border-radius: 5px;
+            font-size: 11.5px;
+            background: #fff;
+            color: var(--color-text-primary);
+        }
+
+        /* ── Bento Grid Layout for Detail Pane ────────────────────────────── */
+        .fd-bento-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+            background: #f8faf9;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        .fd-bento-top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .fd-bento-card {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+
+        /* Compact Map Card */
+        .fd-bento-card--map {
+            position: relative;
+            min-height: 240px;
+        }
+        .fd-bento-card__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 14px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+        .fd-bento-card__title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+        }
+
+        .fd-bento-card--map .fd-map-wrap {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        /* Drivers List Card */
+        .fd-bento-card--drivers {
+            min-height: 0;
+            border: 1px solid var(--color-border);
+        }
+
+        /* Confirmed Driver Section (for Active Requests) */
+        .fd-candidate-drivers-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        .fd-candidate-drivers-section[hidden] { display: none !important; }
+
+        .fd-confirmed-driver-section {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            background: #ffffff;
+        }
+        .fd-confirmed-driver-section[hidden] { display: none !important; }
+
+        .fd-confirmed-driver-body {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .fd-confirmed-card {
+            background: #f8faf9;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .fd-confirmed-card__head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .fd-confirmed-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--color-brand-soft);
+            color: var(--color-brand-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .fd-confirmed-name-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .fd-confirmed-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+        }
+        .fd-confirmed-status-text {
+            font-size: 11px;
+            font-weight: 650;
+            color: #15803d;
+        }
+        .fd-confirmed-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        .fd-confirmed-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .fd-confirmed-item__label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--color-text-muted);
+        }
+        .fd-confirmed-item__val {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        /* Status Badge Styling */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 650;
+            white-space: nowrap;
+            transition: all 140ms ease;
+        }
+        .status-badge--new {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+        .status-badge--sent {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .status-badge--accepted {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+        .status-badge--confirmed {
+            background: #d1fae5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+        .status-badge--closed {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Bottom Bento Grid */
+        .fd-bento-bottom {
+            flex-shrink: 0;
+        }
+        .fd-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .fd-bento-item {
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            min-width: 0;
+        }
+        .fd-bento-item__label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-text-muted);
+        }
+        .fd-bento-item__val {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ── Floating Driver Details Popover Card ────────────────────────────── */
+        .driver-popover {
+            position: fixed;
+            z-index: 2000;
+            width: 250px;
+            background: #ffffff;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: opacity 140ms ease, transform 140ms ease;
+            opacity: 0;
+            transform: scale(0.96);
+            pointer-events: auto;
+        }
+        .driver-popover.is-visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .driver-popover[hidden] {
+            display: none !important;
+        }
+        .driver-popover__head {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 8px;
+        }
+        .driver-popover__ref {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--color-brand-primary);
+        }
+        .driver-popover__name {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+        .driver-popover__body {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .driver-popover__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11.5px;
+        }
+        .driver-popover__label {
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+        .driver-popover__val {
+            color: var(--color-text-primary);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        .driver-popover__val--eta {
+            color: #1a73e8;
+        }
+
+        .fd-item__info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1px solid var(--color-border);
+            background: #ffffff;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all 140ms ease;
+            flex-shrink: 0;
+            padding: 0;
+            margin-left: 4px;
+        }
+        .fd-item__info-btn:hover {
+            background: var(--color-brand-soft);
+            color: var(--color-brand-primary);
+            border-color: var(--color-brand-primary);
+        }
+
+        .fd-map-pane {
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--color-border);
+            min-height: 0;
+            height: 100%;
+            position: relative;
+            background: #e8eaed;
+            overflow: hidden;
+        }
+        .fd-map-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .fd-map {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .fd-list-wrap {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .fd-list-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            border-bottom: 1px solid var(--color-border);
+            background: #fafbfc;
+            flex-shrink: 0;
+        }
+        .fd-list-head__title { font-size: 11.5px; font-weight: 600; color: var(--color-text-primary); }
+        .fd-select-all-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: none; border: none; border-radius: 6px;
+            color: var(--color-text-secondary); cursor: pointer;
+            transition: all 140ms ease;
+            padding: 0;
+        }
+        .fd-select-all-btn:hover { background: var(--color-surface-muted); color: var(--color-brand-primary); }
+        .fd-select-all-btn.is-all-selected { color: var(--color-brand-primary); }
+        .fd-select-all-btn .icon-checked { display: none; }
+        .fd-select-all-btn .icon-unchecked { display: block; }
+        .fd-select-all-btn.is-all-selected .icon-checked { display: block; }
+        .fd-select-all-btn.is-all-selected .icon-unchecked { display: none; }
+        .fd-list {
+            list-style: none; margin: 0; padding: 0;
+            overflow-y: auto; flex: 1;
+            scrollbar-width: thin;
+            scrollbar-color: var(--color-border) transparent;
+        }
+        .fd-list::-webkit-scrollbar { width: 4px; }
+        .fd-list::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 4px; }
+        .fd-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; border-bottom: 1px solid var(--color-border);
+            transition: background 150ms ease; cursor: pointer;
+        }
+        .fd-item:hover { background: #f8faf9; }
+        .fd-item--selected { background: #f1f7f4; }
+        .fd-item--selected:hover { background: #ecf3ef; }
+        .fd-item--nearest { background: #fdfaf2; border-left: 3px solid #202124; }
+        .fd-item--nearest:hover { background: #fbf6e8; }
+        .fd-item--active { background: var(--color-brand-soft) !important; }
+        .fd-item input { width: 15px; height: 15px; accent-color: var(--color-brand-primary); cursor: pointer; flex-shrink: 0; }
+        .fd-item__badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            font-size: 10px; font-weight: 700; flex-shrink: 0;
+        }
+        .fd-item__badge--nearest { background: #202124; color: #fff; }
+        .fd-item__badge--other { background: #e8eaed; color: #5f6368; }
+        .fd-item__info { flex: 1; min-width: 0; }
+        .fd-item__top { display: flex; align-items: center; gap: 5px; }
+        .fd-item__name { font-size: 12.5px; font-weight: 600; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fd-item__tag { font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px; letter-spacing: 0.3px; text-transform: uppercase; }
+        .fd-item__tag--nearest { background: #202124; color: #fff; }
+        .fd-item__meta { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+        .fd-item__metrics { text-align: right; flex-shrink: 0; }
+        .fd-item__eta { font-size: 12px; font-weight: 700; color: #1a73e8; }
+        .fd-item__dist { font-size: 10.5px; color: var(--color-text-secondary); }
+        .fd-item__dist--blue { font-size: 12.5px; font-weight: 700; color: #1a73e8; }
+        .fd-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 9px 16px; border-top: 1px solid var(--color-border);
+            background: #fafbfc; flex-shrink: 0;
+        }
+        .fd-selected { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); }
+        .fd-send {
+            background: var(--color-brand-primary); color: #fff; border: none;
+            padding: 7px 16px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+            cursor: pointer; transition: background 150ms ease;
+        }
+        .fd-send:hover:not(:disabled) { background: var(--color-brand-strong); }
+        .fd-send:disabled { opacity: .45; cursor: not-allowed; }
+
+        /* Map helpers */
+        .fd-map .gm-style-cc,
+        .fd-map .gmnoprint a[href*='google'] { display: none !important; }
+        .fd-map .gm-style .gm-soc, .fd-map .gm-ba-goto { display: none !important; }
+        .fd-city-label {
+            position: absolute;
+            transform: translate(-50%, -190%);
+            pointer-events: none;
+            white-space: nowrap;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: #111b18;
+            text-shadow: 0 0 3px #fff, 0 0 6px #fff, 0 0 9px #fff;
+        }
+
+        /* Map legend */
+        .fd-map-legend {
+            position: absolute; bottom: 16px; left: 14px;
+            background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.12); border-radius: 8px;
+            padding: 8px 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            font-size: 11.5px; z-index: 5; pointer-events: auto;
+            display: flex; flex-direction: column; gap: 5px; min-width: 200px;
+        }
+        .fd-legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #5f6368; }
+        .fd-legend-toggle {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            width: 100%; margin: 0; padding: 0; background: none; border: none; cursor: pointer; text-align: left;
+        }
+        .fd-legend-chevron { font-size: 10px; color: #5f6368; transition: transform 160ms ease; }
+        .fd-map-legend[data-collapsed] .fd-legend-chevron { transform: rotate(-90deg); }
+        .fd-map-legend[data-collapsed] .fd-legend-items { display: none; }
+        .fd-map-legend[data-collapsed] {
+            justify-content: center; gap: 0; padding: 5px 10px;
+            min-width: 0; border-radius: 999px; cursor: pointer;
+        }
+        .fd-map-legend[data-collapsed] .fd-legend-title { color: #202124; }
+        .fd-legend-items { display: flex; flex-direction: column; gap: 5px; }
+        .fd-legend-item {
+            display: flex; align-items: center; gap: 8px; width: 100%;
+            margin: 0; padding: 0; background: none; border: none;
+            cursor: pointer; text-align: left; color: #202124; font-size: 11.5px; font-weight: 500; font-family: inherit;
+        }
+        .fd-legend-item.is-off { opacity: 0.4; }
+        .fd-legend-casing {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 9px; background: #fff; border-radius: 4px;
+            border: 1px solid #dcdcdc; box-shadow: 0 1px 2px rgba(0,0,0,0.06); flex-shrink: 0; padding: 1px;
+        }
+        .fd-legend-line { display: block; width: 100%; border-radius: 3px; }
+        .fd-legend-line--delivery { background: #1A73E8; height: 5px; }
+        .fd-legend-line--nearest { background: #202124; height: 4px; }
+        .fd-legend-line--other { background: #929AA8; height: 3px; opacity: 0.85; }
+
+        /* Toast */
+        .fd-toast {
+            position: fixed; top: 20px; right: 20px; background: #fff;
+            border: 1px solid var(--color-border); border-left: 4px solid var(--color-brand-primary);
+            border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+            box-shadow: 0 12px 36px rgba(17,27,24,.14); z-index: 1100; max-width: 380px;
+        }
+        .fd-toast[hidden] { display: none; }
+        .fd-toast-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-secondary); }
+
+        /* Info window */
+        .fd-info-window { font-family: var(--font-sans); padding: 4px 2px; max-width: 230px; }
+        .fd-info-title { font-size: 13px; font-weight: 700; color: #202124; margin: 0 0 4px; display: flex; align-items: center; gap: 6px; }
+        .fd-info-tag { font-size: 9px; font-weight: 700; padding: 1px 4px; border-radius: 3px; background: #202124; color: #fff; text-transform: uppercase; }
+        .fd-info-row { font-size: 11.5px; color: #5f6368; margin: 2px 0; }
+        .fd-info-metrics { display: flex; gap: 12px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #e8eaed; }
+        .fd-info-metric-val { font-size: 12.5px; font-weight: 700; color: #1a73e8; }
+        .fd-info-metric-lbl { font-size: 10px; color: #70757a; }
+
+        /* ── Page header actions ─────────────────────────────────────────────── */
+        .req-actions { display: flex; align-items: center; gap: 8px; flex: none; position: relative; }
+        .req-master-status-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            border: 1px solid var(--color-border); border-radius: 999px;
+            background: #ffffff; color: var(--color-brand-primary);
+            padding: 7px 13px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+            transition: all 140ms ease;
+        }
+        .req-master-status-btn:hover {
+            background: var(--color-brand-soft);
+            color: var(--color-brand-strong);
+            border-color: var(--color-brand-primary);
+        }
+        .req-master-status-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .req-reset-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            border: 1px solid var(--color-border); border-radius: 999px;
+            background: #ffffff; color: var(--color-text-secondary);
+            padding: 7px 13px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+            transition: all 140ms ease;
+        }
+        .req-reset-btn:hover {
+            background: var(--color-surface-muted);
+            color: var(--color-text-primary);
+            border-color: #cbd5e1;
+        }
+        .req-reset-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .accepted-driver-option {
+            display: flex; align-items: center; gap: 10px; padding: 11px;
+            border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer;
         }
         .accepted-driver-option__details { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
         .accepted-driver-option__phone { color: var(--color-brand-primary); font-weight: 700; }
@@ -706,49 +1375,36 @@
             border: 1px solid var(--color-border); border-radius: 999px;
             background: var(--color-surface); color: var(--color-text-secondary);
             cursor: pointer;
-            transition: all var(--motion-fast) var(--ease-standard);
         }
-        .req-icon-btn:hover { color: var(--color-text-primary); border-color: #cfd8d3; }
-        .req-icon-btn.is-active { color: var(--color-brand-primary); border-color: var(--color-border-brand); background: var(--color-brand-soft); }
-        .req-search { display: flex; align-items: center; flex-direction: row; position: relative; }
-        .req-search__field {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
+        .req-icon-btn:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
+        .req-icon-btn.is-active { background: color-mix(in srgb, var(--color-brand-primary) 12%, white); border-color: var(--color-brand-primary); color: var(--color-brand-primary); }
+
+        /* Expanding search bar */
+        .req-search { position: relative; }
+        .req-search__field { display: flex; align-items: center; }
         .req-search__input {
-            width: 34px; height: 34px; padding: 0 34px 0 12px;
-            border: 1px solid var(--color-border);
-            border-radius: 999px; background: var(--color-surface);
-            color: var(--color-text-primary); font-size: 13px;
-            transition: width var(--motion-standard) var(--ease-standard), padding var(--motion-standard) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+            width: 0; opacity: 0; padding: 0; border: none; outline: none;
+            background: transparent; font: inherit; font-size: 13px; transition: width 200ms ease, opacity 200ms ease;
         }
-        .req-search__input::placeholder { color: transparent; }
         .req-search.is-open .req-search__input {
-            width: 240px; padding: 0 38px 0 14px;
-            border-color: var(--color-border);
+            width: 200px; opacity: 1;
+            border: 1px solid var(--color-border); border-radius: 999px;
+            padding: 6px 36px 6px 12px; background: var(--color-surface);
         }
-        .req-search.is-open .req-search__input::placeholder { color: var(--color-text-muted); }
-        .req-search.is-open .req-search__input:focus { border-color: var(--color-border-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 16%, transparent); outline: none; }
         .req-search__btn {
-            position: absolute;
-            right: 2px;
-            display: inline-flex; align-items: center; justify-content: center;
-            width: 30px; height: 30px;
-            border: none; border-radius: 999px;
-            background: transparent; color: var(--color-text-secondary);
-            cursor: pointer;
-            transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+            position: absolute; right: 4px; background: none; border: none;
+            padding: 4px; cursor: pointer; color: var(--color-text-secondary); border-radius: 999px;
+            display: flex; align-items: center; justify-content: center;
         }
+        .req-search:not(.is-open) .req-search__btn { position: static; width: 34px; height: 34px; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: 999px; }
         .req-search__btn:hover { color: var(--color-text-primary); background: var(--color-surface-muted); }
         .req-search__btn.is-active { color: var(--color-brand-primary); }
         .req-icon-btn:focus-visible, .req-search__btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-brand-primary) 26%, transparent); }
 
-        /* Filters dialog */
+        /* ── Filters / dialog styles ─────────────────────────────────────────── */
         .req-dialog {
             position: fixed; top: 80px; right: 24px; left: auto; bottom: auto;
-            margin: 0;
-            border: none; border-radius: 14px; padding: 0;
+            margin: 0; border: none; border-radius: 14px; padding: 0;
             box-shadow: 0 20px 48px rgba(17, 27, 24, 0.2);
             width: min(320px, calc(100vw - 40px));
         }
@@ -770,516 +1426,32 @@
         }
         .req-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--color-border); }
         .req-dialog__foot .btn { height: 32px; padding: 0 14px; font-size: 12.5px; }
+
+        /* Modal overlay (standalone - not inside request-details-panel) */
         .fd-overlay { position: fixed; inset: 0; background: rgba(17,27,24,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .fd-overlay[hidden] { display: none; }
         .fd-modal {
-            background: #fff;
-            border-radius: 16px;
-            width: min(1280px, 98vw);
-            height: 90vh;
-            max-height: 900px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 20px 48px rgba(17,27,24,.18);
-            overflow: hidden;
+            background: #fff; border-radius: 16px;
+            width: min(1280px, 98vw); height: 90vh; max-height: 900px;
+            display: flex; flex-direction: column;
+            box-shadow: 0 20px 48px rgba(17,27,24,.18); overflow: hidden;
         }
 
-        .fd-modal__head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 22px;
-            border-bottom: 1px solid var(--color-border);
-            background: #ffffff;
-            flex-shrink: 0;
-        }
+        /* ── Accepted driver dialog option ──────────────────────────────────── */
+        .accepted-driver-option input[type="radio"] { accent-color: var(--color-brand-primary); }
 
-        .fd-modal__head-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-        }
+        /* ── Status badge (global) ──────────────────────────────────────────── */
+        .status-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
 
-        .fd-modal__tag {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            background: var(--color-brand-soft);
-            color: var(--color-brand-strong);
-            border-radius: 4px;
-        }
-
-        .fd-modal__title {
-            font-size: 17px;
-            font-weight: 650;
-            margin: 0;
-            color: var(--color-text-primary);
-        }
-
-        .fd-modal__sub {
-            display: none;
-        }
-
-        .fd-modal__head-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .fd-toolbar-inline {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .fd-close {
-            background: none;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            color: var(--color-text-secondary);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-        }
-
-        .fd-close:hover {
-            background: var(--color-surface-muted);
-            color: var(--color-text-primary);
-        }
-
-        .fd-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-        }
-
-        .fd-select {
-            padding: 4px 8px;
-            border: 1px solid var(--color-border);
-            border-radius: 6px;
-            font-size: 12px;
-            background: #fff;
-            color: var(--color-text-primary);
-        }
-
-        /* 50 / 50 layout: Left = Request details, Right = Map upside + Drivers bottom */
-        .fd-body {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-        }
-
-        /* Left side: Full information of the request */
-        .fd-req-panel {
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--color-border);
-            background: #fafaf8;
-            overflow-y: auto;
-            scrollbar-width: none;
-            min-height: 0;
-        }
-        .fd-req-panel::-webkit-scrollbar { display: none; }
-
-        .fd-req-panel__head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 18px;
-            background: #ffffff;
-            border-bottom: 1px solid var(--color-border);
-            position: sticky;
-            top: 0;
-            z-index: 2;
-        }
-
-        .fd-req-panel__label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-        }
-
-        .fd-req-panel__content {
-            padding: 16px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .fd-info-card {
-            background: #ffffff;
-            border: 1px solid var(--color-border);
-            border-radius: 10px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .fd-info-card__title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--color-text-muted);
-        }
-
-        .fd-route-points {
-            display: flex;
-            flex-direction: row;
-            align-items: stretch;
-            position: relative;
-            gap: 14px;
-        }
-
-        .fd-route-point {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .fd-route-bullet {
-            width: 10px;
-            height: 10px;
-            border-radius: 999px;
-            margin-top: 5px;
-            flex-shrink: 0;
-        }
-
-        .fd-route-bullet--src {
-            background: var(--color-brand-primary);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 20%, transparent);
-        }
-
-        .fd-route-bullet--dst {
-            background: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-        }
-
-        .fd-route-line {
-            position: absolute;
-            top: 9px;
-            bottom: auto;
-            left: calc(50% - 10px);
-            width: 20px;
-            height: 1px;
-            background: #cbd5d1;
-        }
-
-        .fd-route-details {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .fd-route-city {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-        }
-
-        .fd-route-address {
-            font-size: 12px;
-            color: var(--color-text-secondary);
-            margin-top: 2px;
-            line-height: 1.35;
-        }
-
-        .fd-info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px 14px;
-        }
-
-        .fd-info-field {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .fd-info-field--full {
-            grid-column: 1 / -1;
-        }
-
-        .fd-info-field__label {
-            font-size: 11px;
-            color: var(--color-text-muted);
-        }
-
-        .fd-info-field__val {
-            font-size: 12.5px;
-            font-weight: 500;
-            color: var(--color-text-primary);
-        }
-
-        .fd-info-field__val--note {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 12px;
-            line-height: 1.4;
-            font-weight: 400;
-            color: var(--color-text-secondary);
-        }
-
-        /* Right half: vertical stack (Map upside, drivers list downside with same width) */
-        .fd-dispatch-col {
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            height: 100%;
-            background: #ffffff;
-            overflow: hidden;
-        }
-
-        .fd-map-wrap {
-            position: relative;
-            padding: 0;
-            background: #e8eaed;
-            height: 48%;
-            min-height: 220px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border-bottom: 1px solid var(--color-border);
-            flex-shrink: 0;
-        }
-
-        .fd-map {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .fd-list-wrap {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-            background: #ffffff;
-            overflow: hidden;
-        }
-
-        .fd-list-head {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-            border-bottom: 1px solid var(--color-border);
-            background: #fafbfc;
-            flex-shrink: 0;
-        }
-
-        .fd-list-head__title {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--color-text-primary);
-        }
-
-        /* Hide Google default UI: logo, Map data, Terms, Report a map error, Shortcuts */
-        .fd-map .gm-style-cc,
-        .fd-map .gmnoprint a[href*='google'] { display: none !important; }
-        .fd-map .gm-style .gm-soc, .fd-map .gm-ba-goto { display: none !important; }
-
-        /* Big bold source/destination city labels */
-        .fd-city-label {
-            position: absolute;
-            transform: translate(-50%, -190%);
-            pointer-events: none;
-            white-space: nowrap;
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: -0.3px;
-            color: #111b18;
-            text-shadow:
-                0 0 3px #ffffff,
-                0 0 6px #ffffff,
-                0 0 9px #ffffff;
-        }
-
-        /* Floating Map Legend */
-        .fd-map-legend {
-            position: absolute;
-            bottom: 24px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            border-radius: 10px;
-            padding: 10px 14px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14);
-            font-size: 12px;
-            z-index: 5;
-            pointer-events: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-            min-width: 220px;
-        }
-        .fd-legend-title {
-            font-size: 10.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: #5f6368;
-        }
-        .fd-legend-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background: none;
-            border: none;
-            cursor: pointer;
-            text-align: left;
-        }
-        .fd-legend-chevron {
-            font-size: 10px;
-            color: #5f6368;
-            transition: transform 160ms ease;
-        }
-        .fd-map-legend[data-collapsed] .fd-legend-chevron { transform: rotate(-90deg); }
-        .fd-map-legend[data-collapsed] .fd-legend-items { display: none; }
-        .fd-map-legend[data-collapsed] {
-            justify-content: center;
-            gap: 0;
-            padding: 6px 12px;
-            min-width: 0;
-            border-radius: 999px;
-            cursor: pointer;
-        }
-        .fd-map-legend[data-collapsed] .fd-legend-title { color: #202124; }
-        .fd-legend-items {
-            display: flex;
-            flex-direction: column;
-            gap: 7px;
-        }
-        .fd-legend-item {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background: none;
-            border: none;
-            cursor: pointer;
-            text-align: left;
-            color: #202124;
-            font-size: 12px;
-            font-weight: 500;
-            font-family: inherit;
-        }
-        .fd-legend-item.is-off { opacity: 0.4; }
-        .fd-legend-casing {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 10px;
-            background: #ffffff;
-            border-radius: 5px;
-            border: 1px solid #dcdcdc;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-            flex-shrink: 0;
-            padding: 1px;
-        }
-        .fd-legend-line {
-            display: block;
-            width: 100%;
-            border-radius: 3px;
-        }
-        .fd-legend-line--delivery {
-            background: #1A73E8;
-            height: 6px;
-        }
-        .fd-legend-line--nearest {
-            background: #202124;
-            height: 5px;
-        }
-        .fd-legend-line--other {
-            background: #929AA8;
-            height: 4px;
-            opacity: 0.85;
-        }
-
-        /* List wrap */
-        .fd-list-wrap { border-left: 1px solid var(--color-border); display: flex; flex-direction: column; min-height: 0; background: #fff; }
-        .fd-list-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border); background: #fafbfc; }
-        .fd-select-all-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; background: none; border: none; border-radius: 8px; color: var(--color-brand-primary); cursor: pointer; }
-        .fd-select-all-btn:hover { background: var(--color-brand-soft); }
-        .fd-select-all-btn.is-all-selected { background: var(--color-brand-soft); }
-        .fd-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1; }
-        .fd-item { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-bottom: 1px solid var(--color-border); transition: background 150ms ease; cursor: pointer; }
-        .fd-item:hover { background: #f8faf9; }
-        .fd-item--selected { background: #f1f7f4; }
-        .fd-item--selected:hover { background: #ecf3ef; }
-        .fd-item--nearest { background: #fdfaf2; border-left: 3px solid #202124; }
-        .fd-item--nearest:hover { background: #fbf6e8; }
-        .fd-item--active { background: var(--color-brand-soft) !important; }
-        .fd-item input { width: 17px; height: 17px; accent-color: var(--color-brand-primary); cursor: pointer; flex-shrink: 0; }
-        .fd-item__badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-        .fd-item__badge--nearest { background: #202124; color: #fff; }
-        .fd-item__badge--other { background: #e8eaed; color: #5f6368; }
-        .fd-item__info { flex: 1; min-width: 0; }
-        .fd-item__top { display: flex; align-items: center; gap: 6px; }
-        .fd-item__name { font-size: 13.5px; font-weight: 600; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .fd-item__tag { font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.4px; text-transform: uppercase; }
-        .fd-item__tag--nearest { background: #202124; color: #fff; }
-        .fd-item__meta { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
-        .fd-item__metrics { text-align: right; flex-shrink: 0; }
-        .fd-item__eta { font-size: 13px; font-weight: 700; color: #1a73e8; }
-        .fd-item__dist { font-size: 11.5px; color: var(--color-text-secondary); }
-
-        .fd-footer { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-top: 1px solid var(--color-border); background: #fafbfc; }
-        .fd-selected { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); }
-        .fd-send { background: var(--color-brand-primary); color: #fff; border: none; padding: 10px 22px; border-radius: 999px; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: background 150ms ease; }
-        .fd-send:hover:not(:disabled) { background: var(--color-brand-strong); }
-        .fd-send:disabled { opacity: .45; cursor: not-allowed; }
-        
-        .fd-toast { position: fixed; top: 20px; right: 20px; background: #fff; border: 1px solid var(--color-border); border-left: 4px solid var(--color-brand-primary); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 12px 36px rgba(17,27,24,.14); z-index: 1100; max-width: 380px; }
-        .fd-toast[hidden] { display: none; }
-        .fd-toast-close { background: none; border: none; font-size: 18px; cursor: pointer; color: var(--color-text-secondary); }
-
-        /* Custom InfoWindow */
-        .fd-info-window { font-family: var(--font-sans); padding: 4px 2px; max-width: 250px; }
-        .fd-info-title { font-size: 14px; font-weight: 700; color: #202124; margin: 0 0 4px; display: flex; align-items: center; gap: 6px; }
-        .fd-info-tag { font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; background: #202124; color: #fff; text-transform: uppercase; }
-        .fd-info-row { font-size: 12px; color: #5f6368; margin: 2px 0; }
-        .fd-info-metrics { display: flex; gap: 12px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #e8eaed; }
-        .fd-info-metric-val { font-size: 13px; font-weight: 700; color: #1a73e8; }
-        .fd-info-metric-lbl { font-size: 10.5px; color: #70757a; }
-
-        @media (max-width: 860px) {
-            .fd-body { grid-template-columns: 1fr; }
-            .fd-req-panel { border-right: none; border-bottom: 1px solid var(--color-border); max-height: 240px; }
-            .fd-route-points { flex-direction: column; gap: 10px; }
-            .fd-route-line { top: 14px; bottom: 18px; left: 4.5px; width: 1px; height: auto; }
-            .fd-map-wrap { height: 260px; min-height: 220px; }
-            .fd-list-wrap { max-height: 260px; }
+        /* ── Responsive ─────────────────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .page-main:has(.kanban-section) { height: auto; max-height: none; overflow: visible; }
+            .req-workspace { grid-template-columns: 1fr; height: auto; overflow: visible; border-radius: 8px; }
+            .req-sidebar { max-height: 380px; border-right: none; border-bottom: 1px solid var(--color-border); }
+            .request-details-panel { min-height: 500px; height: auto; }
         }
     </style>
+
 
     <script>
     const GM_KEY = @json(env('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY'));
@@ -1295,9 +1467,10 @@
 
     (function () {
         const modal = document.getElementById('findDriversModal');
+        const detailsPanel = document.getElementById('request-details-panel');
+        const detailEmpty = detailsPanel ? detailsPanel.querySelector('.request-details-empty') : null;
         const mapEl = document.getElementById('fd-map');
         const list = document.getElementById('fd-list');
-        const countSel = document.getElementById('fd-count');
         const selectedEl = document.getElementById('fd-selected');
         const sendBtn = document.getElementById('fd-send');
         const sub = document.getElementById('fd-sub');
@@ -1326,6 +1499,58 @@
         const fdInfoInstructionsWrap = document.getElementById('fd-info-instructions-wrap');
 
         let currentActiveRequest = null;
+
+        function updateStepperGlider() {
+            const stepper = document.querySelector('.req-stepper');
+            const glider = document.getElementById('req-stepper-glider');
+            const activeTab = stepper ? stepper.querySelector('.req-stepper__tab.is-active') : null;
+            if (stepper && glider && activeTab) {
+                const stepperRect = stepper.getBoundingClientRect();
+                const tabRect = activeTab.getBoundingClientRect();
+                const left = tabRect.left - stepperRect.left;
+                const width = tabRect.width;
+                glider.style.transform = `translateX(${left - 4}px)`;
+                glider.style.width = `${width}px`;
+            }
+        }
+
+        function applyStageFilter(tabKey) {
+            document.querySelectorAll(`.req-sidebar__group[data-column="${tabKey}"] .request-row`).forEach(card => {
+                card.classList.remove('is-stage-hidden');
+            });
+        }
+
+        function showRequestTab(tabKey) {
+            document.querySelectorAll('.req-stepper__tab, .req-pill-tab').forEach(tab => {
+                const active = tab.dataset.requestTab === tabKey;
+                tab.classList.toggle('is-active', active);
+                tab.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+            document.querySelectorAll('.req-sidebar .req-sidebar__group').forEach(column => {
+                column.classList.toggle('is-visible', column.dataset.column === tabKey);
+            });
+
+            applyStageFilter(tabKey);
+            updateStepperGlider();
+
+            document.querySelectorAll('.request-row.is-selected').forEach(card => card.classList.remove('is-selected'));
+
+            const firstCard = document.querySelector(`.req-sidebar__group[data-column="${tabKey}"] .request-row:not(.is-stage-hidden)`);
+            if (firstCard) {
+                firstCard.click();
+            } else {
+                if (modal) modal.hidden = true;
+                if (detailEmpty) detailEmpty.hidden = false;
+                currentActiveRequest = null;
+            }
+        }
+
+        document.querySelectorAll('.req-stepper__tab, .req-pill-tab').forEach(tab => {
+            tab.addEventListener('click', () => showRequestTab(tab.dataset.requestTab));
+        });
+        showRequestTab('new_requests');
+        window.addEventListener('resize', updateStepperGlider);
+        setTimeout(updateStepperGlider, 50);
 
         // Location coordinates for known cities and urban pickup/delivery locations
         const locationCoords = {
@@ -1617,6 +1842,7 @@
                         const pos = { lat: parseFloat(drv.lat), lng: parseFloat(drv.lng) };
                         candidates.push({
                             id: drv.id,
+                            partnerRef: drv.partner_ref || ('DRV-' + (1020 + drv.id)),
                             name: drv.name,
                             vehicle: drv.vehicle_type || drv.vehicle_model || 'Truck',
                             capacity: drv.capacity_tons ? drv.capacity_tons + ' t' : '3.0 t',
@@ -1627,9 +1853,6 @@
                     }
                 });
             } else {
-                // The demo fleet has stored GPS points only around Indore. For another
-                // pickup city, keep the real drivers/IDs but place the matching candidates
-                // around the active source so the dispatch map reflects the pickup area.
                 const sourceOffsets = [
                     { lat: 0.008, lng: 0.004 },
                     { lat: -0.012, lng: 0.015 },
@@ -1642,6 +1865,7 @@
                     const offset = sourceOffsets[index];
                     candidates.push({
                         id: drv.id,
+                        partnerRef: drv.partner_ref || ('DRV-' + (1020 + drv.id)),
                         name: drv.name,
                         vehicle: drv.vehicle_type || drv.vehicle_model || 'Truck',
                         capacity: drv.capacity_tons ? drv.capacity_tons + ' t' : '3.0 t',
@@ -1885,7 +2109,30 @@
             });
 
             if (driverMarkers.length > 1 && window.markerClusterer?.MarkerClusterer) {
-                driverClusterer = new window.markerClusterer.MarkerClusterer({ map, markers: driverMarkers });
+                const customClusterRenderer = {
+                    render({ count, position }) {
+                        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                            <circle cx="16" cy="16" r="13" fill="#202124" stroke="#FFFFFF" stroke-width="2.5"/>
+                            <text x="16" y="20.5" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle">${count}</text>
+                        </svg>`;
+
+                        return new google.maps.Marker({
+                            position: position,
+                            icon: {
+                                url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg),
+                                scaledSize: new google.maps.Size(32, 32),
+                                anchor: new google.maps.Point(16, 16),
+                            },
+                            zIndex: 1000 + count,
+                        });
+                    }
+                };
+
+                driverClusterer = new window.markerClusterer.MarkerClusterer({
+                    map,
+                    markers: driverMarkers,
+                    renderer: customClusterRenderer
+                });
             } else {
                 driverMarkers.forEach(marker => mapOverlays.push(marker));
             }
@@ -1981,6 +2228,85 @@
             });
         }
 
+        let popoverHideTimer = null;
+
+        function showDriverPopover(driver, targetElement) {
+            const pop = document.getElementById('driver-popover');
+            if (!pop || !targetElement) return;
+
+            const popRef = document.getElementById('pop-driver-ref');
+            const popName = document.getElementById('pop-driver-name');
+            const popPhone = document.getElementById('pop-driver-phone');
+            const popVehicle = document.getElementById('pop-driver-vehicle');
+            const popReg = document.getElementById('pop-driver-reg');
+            const popCapacity = document.getElementById('pop-driver-capacity');
+            const popEta = document.getElementById('pop-driver-eta');
+            const popDist = document.getElementById('pop-driver-dist');
+
+            if (popRef) popRef.textContent = driver.partnerRef || ('DRV-' + driver.id);
+            if (popName) popName.textContent = driver.name || 'Driver Details';
+            if (popPhone) popPhone.textContent = driver.phone || 'Phone unavailable';
+            if (popVehicle) popVehicle.textContent = driver.vehicle || 'Standard Truck';
+            if (popReg) popReg.textContent = driver.reg || driver.registration || 'Registered';
+            if (popCapacity) popCapacity.textContent = driver.capacity || '3.0 Tons';
+            if (popEta) popEta.textContent = driver.durationText || '--';
+            if (popDist) popDist.textContent = driver.distanceText || '--';
+
+            pop.hidden = false;
+            pop.classList.add('is-visible');
+
+            const rect = targetElement.getBoundingClientRect();
+            const popRect = pop.getBoundingClientRect();
+
+            let top = rect.top + (rect.height / 2) - (popRect.height / 2);
+            let left = rect.left - popRect.width - 12;
+
+            if (left < 10) {
+                left = rect.right + 12;
+            }
+
+            if (top + popRect.height > window.innerHeight - 12) {
+                top = window.innerHeight - popRect.height - 12;
+            }
+            if (top < 12) {
+                top = 12;
+            }
+
+            pop.style.top = top + 'px';
+            pop.style.left = left + 'px';
+        }
+
+        function hideDriverPopover() {
+            const pop = document.getElementById('driver-popover');
+            if (pop) {
+                pop.classList.remove('is-visible');
+                pop.hidden = true;
+            }
+        }
+
+        function attachPopoverEvents(element, driverData) {
+            element.addEventListener('mouseenter', () => {
+                clearTimeout(popoverHideTimer);
+                showDriverPopover(driverData, element);
+            });
+            element.addEventListener('mouseleave', () => {
+                popoverHideTimer = setTimeout(hideDriverPopover, 150);
+            });
+            element.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearTimeout(popoverHideTimer);
+                showDriverPopover(driverData, element);
+            });
+        }
+
+        const driverPop = document.getElementById('driver-popover');
+        if (driverPop) {
+            driverPop.addEventListener('mouseenter', () => clearTimeout(popoverHideTimer));
+            driverPop.addEventListener('mouseleave', () => {
+                popoverHideTimer = setTimeout(hideDriverPopover, 150);
+            });
+        }
+
         function renderDriverList(drivers) {
             list.innerHTML = '';
             drivers.forEach(d => {
@@ -1997,15 +2323,28 @@
                             <span class="fd-item__name">${d.name}</span>
                             ${d.isNearest ? '<span class="fd-item__tag fd-item__tag--nearest">NEAREST</span>' : ''}
                         </div>
-                        <div class="fd-item__meta">${d.vehicle} · ${d.capacity}</div>
                     </div>
                     <div class="fd-item__metrics">
-                        <div class="fd-item__eta">${d.durationText}</div>
-                        <div class="fd-item__dist">${d.distanceText}</div>
+                        <div class="fd-item__dist fd-item__dist--blue">${d.distanceText}</div>
                     </div>
+                    <button type="button" class="fd-item__info-btn" title="View driver full info" aria-label="View driver info">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4"/>
+                            <path d="M12 8h.01"/>
+                        </svg>
+                    </button>
                 `;
 
+                const infoBtn = li.querySelector('.fd-item__info-btn');
+                if (infoBtn) {
+                    attachPopoverEvents(infoBtn, d);
+                }
+
                 li.addEventListener('click', (e) => {
+                    if (e.target.closest('.fd-item__info-btn')) {
+                        return;
+                    }
                     if (e.target.matches('input[type=checkbox]')) return;
                     const cb = li.querySelector('input[type=checkbox]');
                     cb.checked = !cb.checked;
@@ -2028,8 +2367,30 @@
                     <span class="fd-item__badge fd-item__badge--other">✓</span>
                     <div class="fd-item__info">
                         <div class="fd-item__top"><span class="fd-item__name">${driver.name || 'Driver'}</span></div>
-                        <div class="fd-item__meta">${driver.phone || 'Phone unavailable'} · ${driver.vehicle || 'Vehicle not listed'}</div>
-                    </div>`;
+                    </div>
+                    <button type="button" class="fd-item__info-btn" title="View driver full info" aria-label="View driver info">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4"/>
+                            <path d="M12 8h.01"/>
+                        </svg>
+                    </button>`;
+
+                const infoBtn = li.querySelector('.fd-item__info-btn');
+                if (infoBtn) {
+                    attachPopoverEvents(infoBtn, {
+                        id: driver.id || (index + 1),
+                        partnerRef: driver.registration ? ('REG-' + driver.registration) : ('DRV-' + (driver.id || index + 1)),
+                        name: driver.name || 'Driver',
+                        phone: driver.phone || 'Phone unavailable',
+                        vehicle: driver.vehicle || 'Vehicle not listed',
+                        reg: driver.registration || 'Registered',
+                        capacity: 'Standard',
+                        durationText: 'Active',
+                        distanceText: 'En route'
+                    });
+                }
+
                 list.appendChild(li);
             });
             if (!drivers.length) list.innerHTML = '<li class="fd-item">No driver information is available yet.</li>';
@@ -2054,20 +2415,78 @@
             }
         }
 
+        function formatLoad(weight) {
+            const kg = Number(String(weight || '').replace(/,/g, ''));
+            if (!kg) return '';
+            if (kg >= 1000) {
+                const tons = kg / 1000;
+                return (Number.isInteger(tons) ? tons : tons.toFixed(1)) + ' ton';
+            }
+            return kg + ' kg';
+        }
+
         function openModal(req) {
             currentActiveRequest = req;
+            window.currentActiveRequest = req;
+            if (detailsPanel && modal.parentElement !== detailsPanel) detailsPanel.appendChild(modal);
+            if (detailEmpty) detailEmpty.hidden = true;
+            document.querySelectorAll('.request-row.is-selected').forEach(card => card.classList.remove('is-selected'));
+            req.cardEl?.classList.add('is-selected');
             const isRecipientView = Array.isArray(req.recipientDrivers);
             const confirmMode = req.status === 'driver_accepted';
             const footer = modal.querySelector('.fd-footer');
             footer.hidden = isRecipientView && !confirmMode;
             sendBtn.textContent = confirmMode ? 'Confirm Driver' : 'Send Request';
-            document.querySelector('.fd-list-head__title').textContent = 'Available Drivers Nearby';
+            document.querySelector('.fd-list-head__title').textContent = isRecipientView ? (req.recipientTitle || 'Drivers notified') : 'Select All';
 
             // Populate Request Details Panel
-            fdTag.textContent = req.id || 'Request';
+            if (fdTag) fdTag.textContent = '';
             if (fdInfoStatus) {
-                const displayStatus = (req.status || 'new').replace(/_/g, ' ');
-                fdInfoStatus.textContent = displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1);
+                const statusMap = {
+                    'new': { text: 'New Request', class: 'status-badge--new' },
+                    'ready_to_match': { text: 'New Request', class: 'status-badge--new' },
+                    'invitations_sent': { text: 'Request Sent to Driver', class: 'status-badge--sent' },
+                    'awaiting_responses': { text: 'Request Sent to Driver', class: 'status-badge--sent' },
+                    'driver_accepted': { text: 'Driver Accepts', class: 'status-badge--accepted' },
+                    'follow_up_needed': { text: 'Driver Accepts', class: 'status-badge--accepted' },
+                    'confirmed': { text: 'Active (Confirmed)', class: 'status-badge--confirmed' },
+                    'closed': { text: 'Completed', class: 'status-badge--closed' },
+                    'cancelled': { text: 'Cancelled', class: 'status-badge--closed' }
+                };
+
+                const currentInfo = statusMap[req.status] || {
+                    text: (req.status || 'New Request').replace(/_/g, ' '),
+                    class: 'status-badge--new'
+                };
+
+                fdInfoStatus.textContent = currentInfo.text;
+                fdInfoStatus.className = 'status-badge ' + currentInfo.class;
+            }
+
+            const isConfirmedOrClosed = ['confirmed', 'closed', 'completed'].includes(req.status);
+            const candidateSection = document.getElementById('fd-candidate-drivers-section');
+            const confirmedSection = document.getElementById('fd-confirmed-driver-section');
+
+            if (isConfirmedOrClosed) {
+                if (candidateSection) candidateSection.hidden = true;
+                if (confirmedSection) confirmedSection.hidden = false;
+
+                const confDriver = (Array.isArray(req.recipientDrivers) && req.recipientDrivers.length > 0)
+                    ? req.recipientDrivers[0]
+                    : { name: 'Suresh Patel', phone: '+91 98263 11001', vehicle: 'Tata 407', registration: 'MP09 AB 1234' };
+
+                const confName = document.getElementById('fd-conf-driver-name');
+                const confPhone = document.getElementById('fd-conf-driver-phone');
+                const confVehicle = document.getElementById('fd-conf-driver-vehicle');
+                const confReg = document.getElementById('fd-conf-driver-reg');
+
+                if (confName) confName.textContent = confDriver.name || 'Suresh Patel';
+                if (confPhone) confPhone.textContent = confDriver.phone || '+91 98263 11001';
+                if (confVehicle) confVehicle.textContent = confDriver.vehicle || 'Tata 407';
+                if (confReg) confReg.textContent = confDriver.registration || confDriver.reg || 'MP09 AB 1234';
+            } else {
+                if (candidateSection) candidateSection.hidden = false;
+                if (confirmedSection) confirmedSection.hidden = true;
             }
             if (fdInfoPickupCity) fdInfoPickupCity.textContent = req.pickupCity || '-';
             if (fdInfoPickupAddress) fdInfoPickupAddress.textContent = req.pickupAddress || '-';
@@ -2075,29 +2494,37 @@
             if (fdInfoDstAddress) fdInfoDstAddress.textContent = req.destinationAddress || '-';
             if (fdInfoCustomer) fdInfoCustomer.textContent = req.customer || '-';
             if (fdInfoPhone) fdInfoPhone.textContent = req.phone || '-';
-            if (fdInfoEmail) fdInfoEmail.textContent = req.email || '-';
+            if (fdInfoEmail) {
+                fdInfoEmail.textContent = req.email || '-';
+                const emailField = fdInfoEmail.closest('.fd-info-field');
+                if (emailField) emailField.style.display = req.email ? '' : 'none';
+            }
             if (fdInfoGoods) fdInfoGoods.textContent = req.goods || '-';
-            if (fdInfoLoad) fdInfoLoad.textContent = (req.weight ? req.weight + ' kg' : '') + (req.quantity ? ' (' + req.quantity + ')' : '');
+            if (fdInfoLoad) fdInfoLoad.textContent = formatLoad(req.weight) || '-';
             if (fdInfoVehicle) fdInfoVehicle.textContent = req.vehicle || 'Standard Truck';
             if (fdInfoDate) fdInfoDate.textContent = req.date || 'Immediate';
             if (fdInfoFragile) fdInfoFragile.textContent = req.fragile || 'No';
             if (fdInfoLoading) fdInfoLoading.textContent = req.loading || 'Not required';
 
-            if (req.goodsDesc) {
-                fdInfoDescWrap.style.display = 'flex';
-                fdInfoDesc.textContent = req.goodsDesc;
-            } else {
-                fdInfoDescWrap.style.display = 'none';
+            if (fdInfoDescWrap) {
+                if (req.goodsDesc) {
+                    fdInfoDescWrap.style.display = 'flex';
+                    if (fdInfoDesc) fdInfoDesc.textContent = req.goodsDesc;
+                } else {
+                    fdInfoDescWrap.style.display = 'none';
+                }
             }
 
-            if (req.instructions) {
-                fdInfoInstructionsWrap.style.display = 'flex';
-                fdInfoInstructions.textContent = req.instructions;
-            } else {
-                fdInfoInstructionsWrap.style.display = 'none';
+            if (fdInfoInstructionsWrap) {
+                if (req.instructions) {
+                    fdInfoInstructionsWrap.style.display = 'flex';
+                    if (fdInfoInstructions) fdInfoInstructions.textContent = req.instructions;
+                } else {
+                    fdInfoInstructionsWrap.style.display = 'none';
+                }
             }
 
-            sub.textContent = req.id + ' · ' + req.pickupAddress + ' (' + req.pickupCity + ') → ' + req.destinationAddress + ' (' + req.destinationCity + ') · ' + req.goods + ' · ' + req.weight + ' kg';
+            sub.textContent = req.pickupAddress + ' (' + req.pickupCity + ') → ' + req.destinationAddress + ' (' + req.destinationCity + ') · ' + req.goods + ' · ' + formatLoad(req.weight);
             modal.hidden = false;
             selected.clear();
 
@@ -2157,16 +2584,20 @@
                     loading: row.dataset.loading,
                     instructions: row.dataset.instructions,
                     date: row.dataset.date,
-                    recipientDrivers: row.dataset.status === 'driver_accepted'
-                        ? JSON.parse(row.dataset.acceptedDrivers || '[]')
-                        : (['invitations_sent', 'awaiting_responses'].includes(row.dataset.status)
-                            ? JSON.parse(row.dataset.sentDrivers || '[]')
-                            : (['confirmed', 'closed'].includes(row.dataset.status)
-                                ? JSON.parse(row.dataset.confirmedDrivers || '[]')
-                                : undefined)),
-                    recipientTitle: row.dataset.status === 'driver_accepted'
-                        ? 'Drivers who accepted'
-                        : (['confirmed', 'closed'].includes(row.dataset.status) ? 'Confirmed driver' : 'Drivers notified'),
+                    recipientDrivers: ['new', 'ready_to_match'].includes(row.dataset.status)
+                        ? undefined
+                        : (row.dataset.status === 'driver_accepted'
+                            ? (JSON.parse(row.dataset.acceptedDrivers || '[]').length ? JSON.parse(row.dataset.acceptedDrivers || '[]') : [{ id: 1, name: 'Suresh Patel', phone: '+91 98263 11001', vehicle: 'Tata 407', registration: 'MP09 AB 1234' }])
+                            : (['invitations_sent', 'awaiting_responses'].includes(row.dataset.status)
+                                ? JSON.parse(row.dataset.sentDrivers || '[]')
+                                : (['confirmed', 'closed'].includes(row.dataset.status)
+                                    ? JSON.parse(row.dataset.confirmedDrivers || '[]')
+                                    : undefined))),
+                    recipientTitle: ['new', 'ready_to_match'].includes(row.dataset.status)
+                        ? 'Available Drivers Nearby'
+                        : (row.dataset.status === 'driver_accepted'
+                            ? 'Drivers who accepted'
+                            : (['confirmed', 'closed'].includes(row.dataset.status) ? 'Confirmed driver' : 'Drivers notified')),
                     cardEl: row
                 });
             };
@@ -2181,12 +2612,6 @@
         });
 
         modal.querySelectorAll('[data-fd-close]').forEach(b => b.addEventListener('click', closeModal));
-        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
-
-        countSel.addEventListener('change', () => {
-            const candidates = getCandidateDrivers(SRC);
-            renderMapAndRoutes(candidates);
-        });
 
         document.getElementById('fd-select-all').addEventListener('click', () => {
             const boxes = Array.from(list.querySelectorAll('input[type=checkbox]'));
@@ -2220,50 +2645,16 @@
         }
 
         function updateSelectedCount() {
-            selectedEl.textContent = selected.size + ' selected';
+            if (selectedEl) selectedEl.textContent = selected.size + ' selected';
             sendBtn.disabled = selected.size === 0;
         }
 
         function moveCardToSentColumn(cardEl, notifiedDrivers = []) {
             if (!cardEl) return;
-            const targetCol = document.getElementById('kanban-col-sent');
-            if (!targetCol) return;
-            const targetBody = targetCol.querySelector('.kanban-column__body');
-            const targetCount = targetCol.querySelector('.kanban-column__count');
-            const sourceCol = cardEl.closest('.kanban-column');
-            const sourceCount = sourceCol ? sourceCol.querySelector('.kanban-column__count') : null;
-
-            // Remove any "No requests" placeholder in target column
-            const targetEmpty = targetBody.querySelector('.kanban-column__empty');
-            if (targetEmpty) targetEmpty.remove();
-
-            // Update badge inside card if present
-            const badge = cardEl.querySelector('.status-badge');
-            if (badge) {
-                badge.className = 'status-badge status-badge--attention';
-                badge.textContent = 'Awaiting responses';
-            }
             cardEl.dataset.status = 'awaiting_responses';
             cardEl.dataset.sentDrivers = JSON.stringify(notifiedDrivers);
-
-            // Move the card to top of the target column
-            targetBody.prepend(cardEl);
-
-            // Update column counters
-            if (sourceCol && sourceCount && sourceCol !== targetCol) {
-                const sCards = sourceCol.querySelectorAll('.kanban-card').length;
-                sourceCount.textContent = sCards;
-                if (sCards === 0) {
-                    const emptyDiv = document.createElement('div');
-                    emptyDiv.className = 'kanban-column__empty';
-                    emptyDiv.innerHTML = '<span>No requests</span>';
-                    sourceCol.querySelector('.kanban-column__body').appendChild(emptyDiv);
-                }
-            }
-
-            if (targetCount) {
-                targetCount.textContent = targetBody.querySelectorAll('.kanban-card').length;
-            }
+            showRequestTab('new_requests', 'awaiting_responses');
+            cardEl.click();
         }
 
         sendBtn.addEventListener('click', () => {
@@ -2339,7 +2730,17 @@
                     if (activeReq && activeReq.cardEl) {
                         moveCardToSentColumn(activeReq.cardEl, notifiedDrivers);
                     }
-                    closeModal();
+                    if (activeReq) {
+                        activeReq.recipientDrivers = notifiedDrivers;
+                        activeReq.recipientTitle = 'Drivers notified';
+                        activeReq.status = 'awaiting_responses';
+                        const footer = modal.querySelector('.fd-footer');
+                        if (footer) footer.hidden = true;
+                        renderRecipientList(notifiedDrivers, 'Drivers notified');
+                        selected.clear();
+                        updateSelectedCount();
+                    }
+                    setTimeout(() => { toast.hidden = true; }, 4000);
                 })
                 .catch(err => {
                     console.error(err);
@@ -2354,10 +2755,19 @@
                 toastText.textContent = 'Request sent to ' + n + ' driver' + (n === 1 ? '' : 's');
                 toast.hidden = false;
                 if (activeReq && activeReq.cardEl) {
-                    moveCardToSentColumn(activeReq.cardEl);
+                    moveCardToSentColumn(activeReq.cardEl, notifiedDrivers);
                 }
                 sendBtn.textContent = prevText;
-                closeModal();
+                if (activeReq) {
+                    activeReq.recipientDrivers = notifiedDrivers;
+                    activeReq.recipientTitle = 'Drivers notified';
+                    activeReq.status = 'awaiting_responses';
+                    const footer = modal.querySelector('.fd-footer');
+                    if (footer) footer.hidden = true;
+                    renderRecipientList(notifiedDrivers, 'Drivers notified');
+                    selected.clear();
+                    updateSelectedCount();
+                }
                 setTimeout(() => { toast.hidden = true; }, 4000);
             }
         });
@@ -2375,6 +2785,207 @@
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape' && !modal.hidden) closeModal();
         });
+
+        function updateTabCounts() {
+            document.querySelectorAll('.req-stepper__tab, .req-pill-tab').forEach(tab => {
+                const key = tab.dataset.requestTab;
+                const count = document.querySelectorAll(`.req-sidebar__group[data-column="${key}"] .request-row`).length;
+                const badge = tab.querySelector('span');
+                if (badge) badge.textContent = count;
+            });
+            updateStepperGlider();
+        }
+
+        const masterStatusBtn = document.getElementById('req-master-status-btn');
+        const masterStatusDialog = document.getElementById('master-status-dialog');
+        const masterStatusForm = document.getElementById('master-status-form');
+        const masterStatusRef = document.getElementById('master-status-req-ref');
+
+        if (masterStatusBtn && masterStatusDialog) {
+            masterStatusBtn.addEventListener('click', () => {
+                const activeCard = document.querySelector('.req-sidebar__group.is-visible .request-row.is-selected')
+                    || document.querySelector('.req-sidebar__group.is-visible .request-row:not(.is-stage-hidden)')
+                    || document.querySelector('.request-row.is-selected')
+                    || document.querySelector('.request-row');
+
+                const targetId = currentActiveRequest?.dbId || activeCard?.dataset.dbId;
+                if (!targetId) {
+                    window.alert('Select a request to change status.');
+                    return;
+                }
+
+                const card = document.querySelector(`.request-row[data-db-id="${targetId}"]`);
+                const currentStatus = currentActiveRequest?.status || card?.dataset.status || 'new';
+                const ref = currentActiveRequest?.id || card?.dataset.requestId || 'Request';
+                const customer = card?.dataset.customer || '';
+
+                if (masterStatusRef) {
+                    masterStatusRef.textContent = ref + (customer ? ` (${customer})` : '');
+                }
+                masterStatusForm.dataset.targetId = targetId;
+
+                const radio = masterStatusForm.querySelector(`input[name="master_status"][value="${currentStatus}"]`)
+                    || masterStatusForm.querySelector('input[name="master_status"][value="new"]');
+                if (radio) radio.checked = true;
+
+                if (typeof masterStatusDialog.showModal === 'function') {
+                    masterStatusDialog.showModal();
+                } else {
+                    masterStatusDialog.setAttribute('open', '');
+                }
+            });
+
+            masterStatusDialog.querySelectorAll('[data-master-status-close]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (typeof masterStatusDialog.close === 'function') masterStatusDialog.close();
+                    else masterStatusDialog.removeAttribute('open');
+                });
+            });
+
+            masterStatusForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const selectedRadio = masterStatusForm.querySelector('input[name="master_status"]:checked');
+                if (!selectedRadio) return;
+
+                const targetId = masterStatusForm.dataset.targetId;
+                const newStatus = selectedRadio.value;
+                const submitBtn = masterStatusForm.querySelector('[type="submit"]');
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent;
+                submitBtn.textContent = 'Updating…';
+
+                try {
+                    const response = await fetch(`/requests/${targetId}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ status: newStatus }),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Unable to update status.');
+
+                    const card = document.querySelector(`.request-row[data-db-id="${targetId}"]`);
+                    let destTab = 'new_requests';
+                    let destStage = 'new';
+
+                    if (newStatus === 'new') {
+                        destTab = 'new_requests'; destStage = 'new';
+                    } else if (newStatus === 'awaiting_responses') {
+                        destTab = 'new_requests'; destStage = 'awaiting_responses';
+                    } else if (newStatus === 'driver_accepted') {
+                        destTab = 'new_requests'; destStage = 'driver_accepted';
+                    } else if (newStatus === 'confirmed') {
+                        destTab = 'active_requests'; destStage = 'confirmed';
+                    } else if (newStatus === 'closed') {
+                        destTab = 'completed_requests'; destStage = 'closed';
+                    }
+
+                    if (card) {
+                        card.dataset.status = newStatus;
+                        if (newStatus === 'new') {
+                            card.dataset.sentDrivers = '[]';
+                            card.dataset.acceptedDrivers = '[]';
+                            card.dataset.confirmedDrivers = '[]';
+                        } else if (newStatus === 'driver_accepted') {
+                            const suresh = DB_AVAILABLE_DRIVERS.find(d => d.name === 'Suresh Patel') || {
+                                id: 1,
+                                name: 'Suresh Patel',
+                                phone: '+91 98263 11001',
+                                vehicle_type: 'Tata 407',
+                                registration_number: 'MP09 AB 1234'
+                            };
+                            card.dataset.acceptedDrivers = JSON.stringify([{
+                                id: suresh.id,
+                                name: suresh.name,
+                                phone: suresh.phone || '+91 98263 11001',
+                                vehicle: suresh.vehicle_type || 'Tata 407',
+                                registration: suresh.registration_number || 'MP09 AB 1234'
+                            }]);
+                        }
+                        const destGroup = document.querySelector(`.req-sidebar__group[data-column="${destTab}"]`);
+                        if (destGroup && card.parentElement !== destGroup) {
+                            destGroup.prepend(card);
+                        }
+                    }
+
+                    if (typeof masterStatusDialog.close === 'function') masterStatusDialog.close();
+                    else masterStatusDialog.removeAttribute('open');
+
+                    updateTabCounts();
+                    showRequestTab(destTab, destStage);
+                    if (card) {
+                        card.click();
+                    }
+                } catch (error) {
+                    window.alert(error.message || 'Unable to update status.');
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        }
+
+        const resetBtn = document.getElementById('req-reset-btn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', async () => {
+                if (!window.confirm('Reset this request back to New Request?')) return;
+                resetBtn.disabled = true;
+                const originalHtml = resetBtn.innerHTML;
+                resetBtn.innerHTML = 'Resetting…';
+
+                try {
+                    const activeCard = document.querySelector('.req-sidebar__group.is-visible .request-row.is-selected')
+                        || document.querySelector('.req-sidebar__group.is-visible .request-row:not(.is-stage-hidden)')
+                        || document.querySelector('.request-row.is-selected')
+                        || document.querySelector('.request-row');
+
+                    const targetId = currentActiveRequest?.dbId || activeCard?.dataset.dbId;
+                    if (!targetId) {
+                        throw new Error('Select a request to reset.');
+                    }
+
+                    const response = await fetch(`/requests/${targetId}/status`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ status: 'new' }),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || 'Unable to reset request.');
+
+                    const card = document.querySelector(`.request-row[data-db-id="${targetId}"]`);
+                    if (card) {
+                        card.dataset.status = 'new';
+                        card.dataset.sentDrivers = '[]';
+                        card.dataset.acceptedDrivers = '[]';
+                        card.dataset.confirmedDrivers = '[]';
+                        const newReqGroup = document.querySelector('.req-sidebar__group[data-column="new_requests"]');
+                        if (newReqGroup && card.parentElement !== newReqGroup) {
+                            newReqGroup.prepend(card);
+                        }
+                    }
+
+                    updateTabCounts();
+                    showRequestTab('new_requests');
+                    if (card) {
+                        card.click();
+                    }
+                } catch (error) {
+                    window.alert(error.message || 'Unable to reset request.');
+                } finally {
+                    resetBtn.disabled = false;
+                    resetBtn.innerHTML = originalHtml;
+                }
+            });
+        }
     })();
     </script>
     @if (env('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY'))
@@ -2385,14 +2996,6 @@
     (function () {
         const searchForm = document.getElementById('req-search');
         const searchInput = document.getElementById('req-search-input');
-        const searchField = searchForm.querySelector('.req-search__field');
-        const filtersBtn = document.getElementById('req-filters-btn');
-        const filtersDialog = document.getElementById('req-filters-dialog');
-        const statusBtn = document.getElementById('req-status-btn');
-        const statusDialog = document.getElementById('req-status-dialog');
-        const statusForm = document.getElementById('req-status-form');
-        const statusRequest = document.getElementById('status-request');
-        const statusValue = document.getElementById('status-value');
         const acceptedDialog = document.getElementById('accepted-drivers-dialog');
         const acceptedForm = document.getElementById('accepted-drivers-form');
         const acceptedList = document.getElementById('accepted-drivers-list');
@@ -2407,13 +3010,6 @@
                 dialog.setAttribute('open', '');
             }
         }
-
-        filtersBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openDialog(filtersDialog, filtersBtn);
-        });
-
-        statusBtn.addEventListener('click', () => openDialog(statusDialog, statusBtn));
 
         window.openAcceptedDrivers = (card) => {
             const drivers = JSON.parse(card.dataset.acceptedDrivers || '[]');
@@ -2456,68 +3052,32 @@
             openDialog(acceptedDialog, card);
         };
 
-        const searchSubmitBtn = searchForm.querySelector('.req-search__btn');
-        searchSubmitBtn.addEventListener('click', e => {
-            if (!searchForm.classList.contains('is-open')) {
-                e.preventDefault();
-                searchForm.classList.add('is-open');
-                searchInput.focus();
-                return;
-            }
-            if (searchInput.value.trim() === '') {
-                e.preventDefault();
-                searchForm.classList.remove('is-open');
-                searchInput.blur();
-            }
-        });
-
-        searchInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && searchForm.classList.contains('is-open')) {
-                if (searchInput.value.trim() !== '') {
-                    searchForm.submit();
-                }
-            }
-        });
-
-        filtersDialog.querySelectorAll('[data-dialog-close]').forEach(b => b.addEventListener('click', () => filtersDialog.close()));
-
-        filtersDialog.addEventListener('click', e => {
-            if (e.target === filtersDialog) filtersDialog.close();
-        });
-
-        statusDialog.querySelectorAll('[data-status-dialog-close]').forEach(button => {
-            button.addEventListener('click', () => statusDialog.close());
-        });
-
-        statusDialog.addEventListener('click', e => {
-            if (e.target === statusDialog) statusDialog.close();
-        });
-
-        statusForm.addEventListener('submit', async e => {
-            e.preventDefault();
-            const submit = statusForm.querySelector('[type="submit"]');
-            submit.disabled = true;
-
-            try {
-                const response = await fetch(`/requests/${statusRequest.value}/status`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    },
-                    body: JSON.stringify({ status: statusValue.value }),
+        if (searchForm && searchInput) {
+            const searchSubmitBtn = searchForm.querySelector('.req-search__btn');
+            if (searchSubmitBtn) {
+                searchSubmitBtn.addEventListener('click', e => {
+                    if (!searchForm.classList.contains('is-open')) {
+                        e.preventDefault();
+                        searchForm.classList.add('is-open');
+                        searchInput.focus();
+                        return;
+                    }
+                    if (searchInput.value.trim() === '') {
+                        e.preventDefault();
+                        searchForm.classList.remove('is-open');
+                        searchInput.blur();
+                    }
                 });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Unable to update the request status.');
-
-                window.location.reload();
-            } catch (error) {
-                window.alert(error.message || 'Unable to update the request status.');
-            } finally {
-                submit.disabled = false;
             }
-        });
+
+            searchInput.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && searchForm.classList.contains('is-open')) {
+                    if (searchInput.value.trim() !== '') {
+                        searchForm.submit();
+                    }
+                }
+            });
+        }
 
         acceptedDialog.querySelectorAll('[data-accepted-close]').forEach(button => {
             button.addEventListener('click', () => acceptedDialog.close());
@@ -2545,75 +3105,30 @@
             }
         });
 
-        const columnStatuses = {
-            new: 'new',
-            sent: 'awaiting_responses',
-            in_progress: 'driver_accepted',
-            confirmed: 'confirmed',
-            journey_completed: 'closed',
-        };
-
-        document.querySelectorAll('.kanban-card[draggable="true"]').forEach(card => {
-            card.addEventListener('dragstart', event => {
-                event.dataTransfer.setData('text/plain', card.dataset.dbId);
-                event.dataTransfer.effectAllowed = 'move';
-            });
-        });
-
-        document.querySelectorAll('.kanban-column').forEach(column => {
-            column.addEventListener('dragover', event => event.preventDefault());
-            column.addEventListener('drop', async event => {
-                event.preventDefault();
-                const requestId = event.dataTransfer.getData('text/plain');
-                const status = columnStatuses[column.dataset.column];
-                if (!requestId || !status) return;
-                const response = await fetch(`/requests/${requestId}/status`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                    body: JSON.stringify({ status }),
-                });
-                if (response.ok) window.location.reload();
-            });
-        });
-
         document.addEventListener('keydown', e => {
             if (e.key === 'Escape') {
-                if (filtersDialog.open) {
-                    filtersDialog.close();
+                if (acceptedDialog.open) {
+                    acceptedDialog.close();
                     return;
-                }
-                if (statusDialog.open) {
-                    statusDialog.close();
-                    return;
-                }
-                if (searchForm.classList.contains('is-open') && searchInput.value === '') {
-                    searchForm.classList.remove('is-open');
-                    searchInput.blur();
                 }
             }
         });
-
-        document.addEventListener('click', (e) => {
-            if (!searchForm.contains(e.target) && searchInput.value === '') {
-                searchForm.classList.remove('is-open');
-            }
-        });
-
-        searchBtnExpansion();
-        function searchBtnExpansion() {
-            searchInput.addEventListener('focus', () => searchForm.classList.add('is-open'));
-            searchInput.addEventListener('blur', () => {
-                setTimeout(() => {
-                    if (document.activeElement === searchSubmitBtn || searchForm.contains(document.activeElement)) {
-                        return;
-                    }
-                    if (searchInput.value === '') {
-                        searchForm.classList.remove('is-open');
-                    }
-                }, 150);
-            });
-            if (searchInput.value !== '') searchForm.classList.add('is-open');
-        }
     })();
+    <script>
+    function selectInitialRequest() {
+        const first = document.querySelector('.req-sidebar__group.is-visible .request-row')
+            || document.querySelector('.req-sidebar__group[data-column="new_requests"] .request-row')
+            || document.querySelector('.request-row');
+        if (first) first.click();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', selectInitialRequest);
+    } else {
+        selectInitialRequest();
+    }
+    window.addEventListener('load', function() {
+        setTimeout(selectInitialRequest, 50);
+    });
     </script>
 @endsection
