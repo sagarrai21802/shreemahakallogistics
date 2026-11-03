@@ -6,41 +6,60 @@
     <header class="page-head">
         <div>
             <h1 class="page-title">Transport Requests</h1>
-            <p class="page-meta">Customer requests, driver responses and follow-up in one place.</p>
+        </div>
+
+        <div class="req-actions">
+            <form id="req-search" class="req-search {{ $q !== '' ? 'is-open' : '' }}" method="GET" action="{{ route('requests.index') }}">
+                <input type="hidden" name="status" value="{{ $status }}">
+                <div class="req-search__field">
+                    <input
+                        id="req-search-input"
+                        class="req-search__input"
+                        type="search"
+                        name="q"
+                        value="{{ $q }}"
+                        placeholder="Reference, customer or city"
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="req-search__btn {{ $q !== '' ? 'is-active' : '' }}" aria-label="Search" title="Search">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                            <path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            <button type="button" id="req-filters-btn" class="req-icon-btn {{ ($q !== '' || $status !== '') ? 'is-active' : '' }}" aria-haspopup="dialog" title="Filters">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M4 6h16M7 12h10M10 18h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
         </div>
     </header>
 
-    <form class="filters" method="GET" action="{{ route('requests.index') }}" role="search">
-        <div class="filter filter--grow">
-            <label class="filter__label" for="request-search">Search</label>
-            <input
-                class="filter__input"
-                id="request-search"
-                type="search"
-                name="q"
-                value="{{ $q }}"
-                placeholder="Reference, customer or city"
-                autocomplete="off"
-            >
-        </div>
-
-        <div class="filter">
-            <label class="filter__label" for="request-status">Status</label>
-            <select class="filter__select" id="request-status" name="status">
-                <option value="">All statuses</option>
-                @foreach ($statuses as $option)
-                    <option value="{{ $option }}" @selected($status === $option)>{{ Str::headline($option) }}</option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="filter__actions">
-            <button class="btn btn--quiet" type="submit">Apply filters</button>
-            @if ($q !== '' || $status !== '')
+    <dialog id="req-filters-dialog" class="req-dialog">
+        <form method="GET" action="{{ route('requests.index') }}">
+            <input type="hidden" name="q" value="{{ $q }}">
+            <div class="req-dialog__head">
+                <span class="req-dialog__title">Filters</span>
+                <button type="button" class="req-dialog__close" data-dialog-close aria-label="Close">×</button>
+            </div>
+            <div class="req-dialog__body">
+                <label class="req-dialog__label" for="dialog-status">Status</label>
+                <select class="req-dialog__select" id="dialog-status" name="status">
+                    <option value="">All statuses</option>
+                    @foreach ($statuses as $option)
+                        <option value="{{ $option }}" @selected($status === $option)>{{ Str::headline($option) }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="req-dialog__foot">
                 <a class="btn btn--quiet" href="{{ route('requests.index') }}">Clear</a>
-            @endif
-        </div>
-    </form>
+                <button class="btn btn--primary" type="submit">Apply</button>
+            </div>
+        </form>
+    </dialog>
 
     <section class="panel" aria-label="Transport requests">
         @if ($requests->isEmpty())
@@ -64,8 +83,8 @@
                             <th scope="col">Route</th>
                             <th scope="col">Goods</th>
                             <th scope="col">Load</th>
-                            <th scope="col">Received</th>
-                            <th scope="col">Drivers</th>
+                            {{-- <th scope="col">Received</th> --}}
+                            {{-- <th scope="col">Drivers</th> --}}
                             <th scope="col">Status</th>
                         </tr>
                     </thead>
@@ -100,6 +119,7 @@
                                     <span class="cell-title">{{ $request->quantity }}</span>
                                     <span class="cell-sub">{{ number_format($request->weight_kg) }} kg</span>
                                 </td>
+                                {{--
                                 <td class="cell-nowrap">
                                     <time datetime="{{ $request->submitted_at->toIso8601String() }}" title="{{ $request->submitted_at->format('D, j M Y, H:i') }}">
                                         {{ $request->submitted_at->diffForHumans() }}
@@ -112,6 +132,7 @@
                                         <span class="cell-muted">Not sent</span>
                                     @endif
                                 </td>
+                                --}}
                                 <td><x-status-badge :status="$request->status" /></td>
                             </tr>
                         @endforeach
@@ -196,6 +217,79 @@
 
     <style>
         .request-row:hover { background: var(--color-brand-tint); }
+
+        /* Page actions: expanding search + filters button */
+        .req-actions { display: flex; align-items: center; gap: 8px; flex: none; position: relative; }
+        .req-icon-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 34px; height: 34px; flex: none;
+            border: 1px solid var(--color-border); border-radius: 999px;
+            background: var(--color-surface); color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--motion-fast) var(--ease-standard);
+        }
+        .req-icon-btn:hover { color: var(--color-text-primary); border-color: #cfd8d3; }
+        .req-icon-btn.is-active { color: var(--color-brand-primary); border-color: var(--color-border-brand); background: var(--color-brand-soft); }
+        .req-search { display: flex; align-items: center; flex-direction: row; position: relative; }
+        .req-search__field {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .req-search__input {
+            width: 34px; height: 34px; padding: 0 34px 0 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 999px; background: var(--color-surface);
+            color: var(--color-text-primary); font-size: 13px;
+            transition: width var(--motion-standard) var(--ease-standard), padding var(--motion-standard) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+        }
+        .req-search__input::placeholder { color: transparent; }
+        .req-search.is-open .req-search__input {
+            width: 240px; padding: 0 38px 0 14px;
+            border-color: var(--color-border);
+        }
+        .req-search.is-open .req-search__input::placeholder { color: var(--color-text-muted); }
+        .req-search.is-open .req-search__input:focus { border-color: var(--color-border-brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-primary) 16%, transparent); outline: none; }
+        .req-search__btn {
+            position: absolute;
+            right: 2px;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px;
+            border: none; border-radius: 999px;
+            background: transparent; color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+        }
+        .req-search__btn:hover { color: var(--color-text-primary); background: var(--color-surface-muted); }
+        .req-search__btn.is-active { color: var(--color-brand-primary); }
+        .req-icon-btn:focus-visible, .req-search__btn:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-brand-primary) 26%, transparent); }
+
+        /* Filters dialog */
+        .req-dialog {
+            position: fixed; top: 80px; right: 24px; left: auto; bottom: auto;
+            margin: 0;
+            border: none; border-radius: 14px; padding: 0;
+            box-shadow: 0 20px 48px rgba(17, 27, 24, 0.2);
+            width: min(320px, calc(100vw - 40px));
+        }
+        .req-dialog::backdrop { background: rgba(17, 27, 24, 0.25); }
+        .req-dialog form { display: flex; flex-direction: column; }
+        .req-dialog__head { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--color-border); }
+        .req-dialog__title { font-size: 14px; font-weight: 650; color: var(--color-text-primary); }
+        .req-dialog__close { background: none; border: none; font-size: 22px; line-height: 1; color: var(--color-text-secondary); cursor: pointer; width: 28px; height: 28px; border-radius: 6px; }
+        .req-dialog__close:hover { background: var(--color-surface-muted); color: var(--color-text-primary); }
+        .req-dialog__body { padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+        .req-dialog__label { font-size: 12px; color: var(--color-text-secondary); }
+        .req-dialog__select {
+            height: 34px; padding: 0 28px 0 10px; width: 100%;
+            border: 1px solid var(--color-border); border-radius: var(--radius-sm);
+            background-color: var(--color-surface); color: var(--color-text-primary); font-size: 13px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2366716c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+        }
+        .req-dialog__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--color-border); }
+        .req-dialog__foot .btn { height: 32px; padding: 0 14px; font-size: 12.5px; }
         .fd-overlay { position: fixed; inset: 0; background: rgba(17,27,24,.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
         .fd-overlay[hidden] { display: none; }
         .fd-modal { background: #fff; border-radius: 16px; width: min(1180px, 100%); height: 86vh; max-height: 860px; display: flex; flex-direction: column; box-shadow: 0 20px 48px rgba(17,27,24,.18); overflow: hidden; }
@@ -1233,4 +1327,89 @@
     @if (env('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY'))
     <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ env('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY') }}&callback=initFindDriversMap"></script>
     @endif
+    <script>
+    (function () {
+        const searchForm = document.getElementById('req-search');
+        const searchInput = document.getElementById('req-search-input');
+        const searchField = searchForm.querySelector('.req-search__field');
+        const filtersBtn = document.getElementById('req-filters-btn');
+        const filtersDialog = document.getElementById('req-filters-dialog');
+
+        filtersBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const rect = filtersBtn.getBoundingClientRect();
+            if (typeof filtersDialog.showModal === 'function') {
+                filtersDialog.style.top = (rect.bottom + 8) + 'px';
+                filtersDialog.style.right = (window.innerWidth - rect.right) + 'px';
+                filtersDialog.showModal();
+            } else {
+                filtersDialog.setAttribute('open', '');
+            }
+        });
+
+        const searchSubmitBtn = searchForm.querySelector('.req-search__btn');
+        searchSubmitBtn.addEventListener('click', e => {
+            if (!searchForm.classList.contains('is-open')) {
+                e.preventDefault();
+                searchForm.classList.add('is-open');
+                searchInput.focus();
+                return;
+            }
+            if (searchInput.value.trim() === '') {
+                e.preventDefault();
+                searchForm.classList.remove('is-open');
+                searchInput.blur();
+            }
+        });
+
+        searchInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && searchForm.classList.contains('is-open')) {
+                if (searchInput.value.trim() !== '') {
+                    searchForm.submit();
+                }
+            }
+        });
+
+        filtersDialog.querySelectorAll('[data-dialog-close]').forEach(b => b.addEventListener('click', () => filtersDialog.close()));
+
+        filtersDialog.addEventListener('click', e => {
+            if (e.target === filtersDialog) filtersDialog.close();
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                if (filtersDialog.open) {
+                    filtersDialog.close();
+                    return;
+                }
+                if (searchForm.classList.contains('is-open') && searchInput.value === '') {
+                    searchForm.classList.remove('is-open');
+                    searchInput.blur();
+                }
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchForm.contains(e.target) && searchInput.value === '') {
+                searchForm.classList.remove('is-open');
+            }
+        });
+
+        searchBtnExpansion();
+        function searchBtnExpansion() {
+            searchInput.addEventListener('focus', () => searchForm.classList.add('is-open'));
+            searchInput.addEventListener('blur', () => {
+                setTimeout(() => {
+                    if (document.activeElement === searchSubmitBtn || searchForm.contains(document.activeElement)) {
+                        return;
+                    }
+                    if (searchInput.value === '') {
+                        searchForm.classList.remove('is-open');
+                    }
+                }, 150);
+            });
+            if (searchInput.value !== '') searchForm.classList.add('is-open');
+        }
+    })();
+    </script>
 @endsection

@@ -11,8 +11,9 @@ use App\Http\Controllers\OverviewController;
 use App\Http\Controllers\TransportRequestController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/dashboard');
-Route::redirect('/overview', '/dashboard');
+Route::redirect('/', '/requests');
+// Route::redirect('/overview', '/dashboard');
+Route::redirect('/overview', '/requests');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');

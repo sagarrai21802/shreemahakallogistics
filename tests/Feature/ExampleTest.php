@@ -10,8 +10,8 @@ class ExampleTest extends TestCase
     /**
      * A basic test example.
      */
-    public function test_the_root_redirects_to_the_dashboard(): void
+    public function test_the_root_redirects_to_the_requests_page(): void
     {
-        $this->get('/')->assertRedirect('/dashboard');
+        $this->get('/')->assertRedirect('/requests');
     }
 }

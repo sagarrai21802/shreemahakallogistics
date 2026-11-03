@@ -10,7 +10,7 @@
         ->implode('');
 
     $primaryItems = [
-        ['label' => 'Overview', 'icon' => 'overview', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
+        // ['label' => 'Overview', 'icon' => 'overview', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
         ['label' => 'Transport Requests', 'icon' => 'requests', 'href' => route('requests.index'), 'active' => request()->routeIs('requests.*')],
         ['label' => 'Drivers', 'icon' => 'drivers', 'href' => route('drivers.index'), 'active' => request()->routeIs('drivers.*')],
         ['label' => 'Driver Applications', 'icon' => 'applications', 'href' => route('applications.index'), 'active' => request()->routeIs('applications.*')],
@@ -25,7 +25,7 @@
 
 <aside id="app-sidebar" class="sidebar" aria-label="Workspace">
     <div class="sidebar__head">
-        <a class="sidebar__brand" href="{{ route('dashboard') }}" aria-label="Shreemahakal Logistics, go to Overview">
+        <a class="sidebar__brand" href="{{ route('requests.index') }}" aria-label="Shreemahakal Logistics, go to Transport Requests">
             <span class="sidebar__brand-mark" aria-hidden="true">SM</span>
             <span class="sidebar__brand-text">
                 <span class="sidebar__brand-name">Shreemahakal</span>
