@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [OverviewController::class, 'index'])->name('dashboard');
 
     Route::get('/requests', [TransportRequestController::class, 'index'])->name('requests.index');
+    Route::post('/requests/{transportRequest}/send-drivers', [TransportRequestController::class, 'sendDrivers'])->name('requests.send-drivers');
+    Route::patch('/requests/{transportRequest}/status', [TransportRequestController::class, 'updateStatus'])->name('requests.update-status');
     Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::get('/applications', [DriverApplicationController::class, 'index'])->name('applications.index');
     Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');

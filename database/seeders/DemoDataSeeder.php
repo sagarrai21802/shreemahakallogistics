@@ -45,7 +45,7 @@ class DemoDataSeeder extends Seeder
             [
                 'reference' => 'TRQ-2026-0142', 'customer_name' => 'Rakesh Sharma', 'customer_phone' => '+91 98260 41022', 'customer_email' => 'rakesh.sharma@example.test',
                 'pickup_address' => 'Scheme 54, Vijay Nagar', 'pickup_city' => 'Indore',
-                'destination_address' => 'Transport Nagar', 'destination_city' => 'Indore',
+                'destination_address' => 'Ganj Peth', 'destination_city' => 'Pune',
                 'goods_category' => 'Furniture', 'goods_description' => 'Two-seater sofa and a dining table, wrapped',
                 'quantity' => '2 items', 'weight_kg' => 450, 'is_fragile' => false, 'needs_loading_help' => true,
                 'special_instructions' => 'Call before arrival; ground floor pickup.',
@@ -165,7 +165,7 @@ class DemoDataSeeder extends Seeder
         ])->each(fn (array $row) => DriverApplication::query()->create($row));
 
         $events = [
-            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0142 · Vijay Nagar → Transport Nagar', 'occurred_at' => $now->copy()->subMinutes(12)],
+            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0142 · Vijay Nagar, Indore → Ganj Peth, Pune', 'occurred_at' => $now->copy()->subMinutes(12)],
             ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0143 · Bhopal → Indore', 'occurred_at' => $now->copy()->subMinutes(35)],
             ['type' => 'application_submitted', 'title' => 'Driver application submitted', 'description' => 'Ravi Chauhan · DRV-2081', 'occurred_at' => $now->copy()->subMinutes(40)],
             ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0144 · Ujjain → Pune', 'occurred_at' => $now->copy()->subMinutes(70)],

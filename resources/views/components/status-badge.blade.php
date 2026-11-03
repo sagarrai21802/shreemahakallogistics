@@ -9,6 +9,8 @@
         'driver_accepted' => ['label' => 'Driver accepted', 'tone' => 'success'],
         'follow_up_needed' => ['label' => 'Follow-up needed', 'tone' => 'attention'],
         'confirmed' => ['label' => 'Confirmed', 'tone' => 'success'],
+        'accepted' => ['label' => 'Confirmed', 'tone' => 'success'],
+        'driver_accepted' => ['label' => 'Confirmed', 'tone' => 'success'],
         'closed' => ['label' => 'Closed', 'tone' => 'neutral'],
         'cancelled' => ['label' => 'Cancelled', 'tone' => 'neutral'],
         'no_driver_available' => ['label' => 'No driver available', 'tone' => 'danger'],
