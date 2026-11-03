@@ -15,11 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::query()->create([
-            'name' => env('ADMIN_NAME', 'Administrator'),
-            'username' => env('ADMIN_USERNAME', 'admin'),
-            'email' => env('ADMIN_EMAIL', 'admin@shreemahakal.test'),
-            'password' => env('ADMIN_PASSWORD', 'password'),
-        ]);
+        User::query()->firstOrCreate(
+            ['username' => env('ADMIN_USERNAME', 'admin')],
+            [
+                'name' => env('ADMIN_NAME', 'Administrator'),
+                'email' => env('ADMIN_EMAIL', 'admin@shreemahakal.test'),
+                'password' => env('ADMIN_PASSWORD', 'password'),
+            ],
+        );
+
+        $this->call(DemoDataSeeder::class);
     }
 }

@@ -35,6 +35,10 @@
             </button>
 
             <main class="page-main">
+                @if (session('status'))
+                    <div class="flash" role="status">{{ session('status') }}</div>
+                @endif
+
                 @yield('content')
             </main>
         </div>

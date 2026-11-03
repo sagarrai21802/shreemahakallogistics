@@ -10,16 +10,16 @@
         ->implode('');
 
     $primaryItems = [
-        ['label' => 'Overview', 'icon' => 'overview', 'href' => route('dashboard'), 'available' => true, 'active' => request()->routeIs('dashboard')],
-        ['label' => 'Transport Requests', 'icon' => 'requests', 'available' => false],
-        ['label' => 'Drivers', 'icon' => 'drivers', 'available' => false],
-        ['label' => 'Driver Applications', 'icon' => 'applications', 'available' => false],
-        ['label' => 'Activity', 'icon' => 'activity', 'available' => false],
+        ['label' => 'Overview', 'icon' => 'overview', 'href' => route('dashboard'), 'active' => request()->routeIs('dashboard')],
+        ['label' => 'Transport Requests', 'icon' => 'requests', 'href' => route('requests.index'), 'active' => request()->routeIs('requests.*')],
+        ['label' => 'Drivers', 'icon' => 'drivers', 'href' => route('drivers.index'), 'active' => request()->routeIs('drivers.*')],
+        ['label' => 'Driver Applications', 'icon' => 'applications', 'href' => route('applications.index'), 'active' => request()->routeIs('applications.*')],
+        ['label' => 'Activity', 'icon' => 'activity', 'href' => route('activity.index'), 'active' => request()->routeIs('activity.*')],
     ];
 
     $utilityItems = [
-        ['label' => 'Help & Support', 'icon' => 'help', 'available' => false],
-        ['label' => 'My Account', 'icon' => 'account', 'available' => false],
+        ['label' => 'Help & Support', 'icon' => 'help', 'href' => route('help'), 'active' => request()->routeIs('help')],
+        ['label' => 'My Account', 'icon' => 'account', 'href' => route('account'), 'active' => request()->routeIs('account')],
     ];
 @endphp
 
@@ -49,23 +49,15 @@
         <ul class="sidebar__list">
             @foreach ($primaryItems as $item)
                 <li>
-                    @if ($item['available'] ?? false)
-                        <a
-                            class="nav-item {{ ($item['active'] ?? false) ? 'is-active' : '' }}"
-                            href="{{ $item['href'] }}"
-                            title="{{ $item['label'] }}"
-                            @if ($item['active'] ?? false) aria-current="page" @endif
-                        >
-                            <x-icon :name="$item['icon']" class="nav-item__icon" />
-                            <span class="nav-item__label">{{ $item['label'] }}</span>
-                        </a>
-                    @else
-                        <span class="nav-item is-disabled" aria-disabled="true" title="{{ $item['label'] }} — not available yet">
-                            <x-icon :name="$item['icon']" class="nav-item__icon" />
-                            <span class="nav-item__label">{{ $item['label'] }}</span>
-                            <span class="nav-item__soon">Soon</span>
-                        </span>
-                    @endif
+                    <a
+                        class="nav-item {{ $item['active'] ? 'is-active' : '' }}"
+                        href="{{ $item['href'] }}"
+                        title="{{ $item['label'] }}"
+                        @if ($item['active']) aria-current="page" @endif
+                    >
+                        <x-icon :name="$item['icon']" class="nav-item__icon" />
+                        <span class="nav-item__label">{{ $item['label'] }}</span>
+                    </a>
                 </li>
             @endforeach
         </ul>
@@ -76,11 +68,15 @@
             <ul class="sidebar__list">
                 @foreach ($utilityItems as $item)
                     <li>
-                        <span class="nav-item nav-item--utility is-disabled" aria-disabled="true" title="{{ $item['label'] }} — not available yet">
+                        <a
+                            class="nav-item nav-item--utility {{ $item['active'] ? 'is-active' : '' }}"
+                            href="{{ $item['href'] }}"
+                            title="{{ $item['label'] }}"
+                            @if ($item['active']) aria-current="page" @endif
+                        >
                             <x-icon :name="$item['icon']" class="nav-item__icon" />
                             <span class="nav-item__label">{{ $item['label'] }}</span>
-                            <span class="nav-item__soon">Soon</span>
-                        </span>
+                        </a>
                     </li>
                 @endforeach
             </ul>

@@ -106,6 +106,14 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (! window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});
+
 mobileQuery.addEventListener('change', () => {
     if (!isMobile()) {
         closeDrawer();
