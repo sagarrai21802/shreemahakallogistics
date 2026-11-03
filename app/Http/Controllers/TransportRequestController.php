@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Driver;
 use App\Models\TransportRequest;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -45,14 +46,34 @@ class TransportRequestController extends Controller
                 'invitations as accepted_count' => fn ($query) => $query->where('response_status', 'accepted'),
             ])
             ->orderByDesc('submitted_at')
-            ->paginate(10)
+            ->paginate(3)
             ->withQueryString();
+
+        $availableDrivers = Driver::query()
+            ->where('approval_status', 'approved')
+            ->where('availability_status', 'available')
+            ->whereNotNull('lat')
+            ->whereNotNull('lng')
+            ->orderBy('id')
+            ->get([
+                'id',
+                'partner_ref',
+                'name',
+                'phone',
+                'vehicle_type',
+                'vehicle_model',
+                'registration_number',
+                'capacity_tons',
+                'lat',
+                'lng',
+            ]);
 
         return view('requests.index', [
             'requests' => $requests,
             'statuses' => self::STATUSES,
             'q' => $q,
             'status' => $status,
+            'availableDrivers' => $availableDrivers,
         ]);
     }
 }

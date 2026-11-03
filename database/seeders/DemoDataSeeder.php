@@ -27,11 +27,13 @@ class DemoDataSeeder extends Seeder
         $now = Carbon::now();
 
         $drivers = collect([
-            ['partner_ref' => 'DRV-1042', 'name' => 'Suresh Patel', 'phone' => '+91 98263 11001', 'email' => null, 'vehicle_type' => 'Tata 407', 'vehicle_model' => 'Tata 407', 'registration_number' => 'MP09 AB 1234', 'capacity_tons' => 3.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(3)],
-            ['partner_ref' => 'DRV-1043', 'name' => 'Mahesh Yadav', 'phone' => '+91 98932 11002', 'email' => null, 'vehicle_type' => 'Eicher Pro', 'vehicle_model' => 'Eicher Pro 3015', 'registration_number' => 'MP09 CD 5678', 'capacity_tons' => 8.50, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(8)],
-            ['partner_ref' => 'DRV-1044', 'name' => 'Imran Khan', 'phone' => '+91 90094 11003', 'email' => null, 'vehicle_type' => 'Ashok Leyland Dost', 'vehicle_model' => 'Ashok Leyland Dost', 'registration_number' => 'MP13 EF 9012', 'capacity_tons' => 1.50, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(12)],
-            ['partner_ref' => 'DRV-1045', 'name' => 'Deepak Verma', 'phone' => '+91 94251 11004', 'email' => null, 'vehicle_type' => 'Tata LPT', 'vehicle_model' => 'Tata LPT 1618', 'registration_number' => 'MP04 GH 3456', 'capacity_tons' => 16.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(6)],
-            ['partner_ref' => 'DRV-1046', 'name' => 'Sunil Rathore', 'phone' => '+91 98271 11005', 'email' => null, 'vehicle_type' => 'Mahindra Blazo', 'vehicle_model' => 'Mahindra Blazo X 28', 'registration_number' => 'MP09 IJ 7890', 'capacity_tons' => 12.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(9)],
+            // 5 available drivers with real GPS positions around Indore city
+            ['partner_ref' => 'DRV-1042', 'name' => 'Suresh Patel', 'phone' => '+91 98263 11001', 'email' => null, 'vehicle_type' => 'Tata 407', 'vehicle_model' => 'Tata 407', 'registration_number' => 'MP09 AB 1234', 'capacity_tons' => 3.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(3), 'lat' => 22.7355, 'lng' => 75.8703],
+            ['partner_ref' => 'DRV-1043', 'name' => 'Mahesh Yadav', 'phone' => '+91 98932 11002', 'email' => null, 'vehicle_type' => 'Eicher Pro', 'vehicle_model' => 'Eicher Pro 3015', 'registration_number' => 'MP09 CD 5678', 'capacity_tons' => 8.50, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(8), 'lat' => 22.6955, 'lng' => 75.8404],
+            ['partner_ref' => 'DRV-1044', 'name' => 'Imran Khan', 'phone' => '+91 90094 11003', 'email' => null, 'vehicle_type' => 'Ashok Leyland Dost', 'vehicle_model' => 'Ashok Leyland Dost', 'registration_number' => 'MP13 EF 9012', 'capacity_tons' => 1.50, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(12), 'lat' => 22.7511, 'lng' => 75.9002],
+            ['partner_ref' => 'DRV-1045', 'name' => 'Deepak Verma', 'phone' => '+91 94251 11004', 'email' => null, 'vehicle_type' => 'Tata LPT', 'vehicle_model' => 'Tata LPT 1618', 'registration_number' => 'MP04 GH 3456', 'capacity_tons' => 16.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(6), 'lat' => 22.7030, 'lng' => 75.8890],
+            ['partner_ref' => 'DRV-1046', 'name' => 'Sunil Rathore', 'phone' => '+91 98271 11005', 'email' => null, 'vehicle_type' => 'Mahindra Blazo', 'vehicle_model' => 'Mahindra Blazo X 28', 'registration_number' => 'MP09 IJ 7890', 'capacity_tons' => 12.00, 'approval_status' => 'approved', 'availability_status' => 'available', 'last_location_at' => $now->copy()->subMinutes(9), 'lat' => 22.7425, 'lng' => 75.8210],
+            // Non-available drivers without GPS
             ['partner_ref' => 'DRV-1047', 'name' => 'Arjun Mehta', 'phone' => '+91 97131 11006', 'email' => null, 'vehicle_type' => 'Tata Ace', 'vehicle_model' => 'Tata Ace Gold', 'registration_number' => 'MP13 KL 2345', 'capacity_tons' => 1.00, 'approval_status' => 'approved', 'availability_status' => 'busy', 'last_location_at' => $now->copy()->subMinutes(25)],
             ['partner_ref' => 'DRV-1048', 'name' => 'Vikram Singh', 'phone' => '+91 99261 11007', 'email' => null, 'vehicle_type' => 'Eicher', 'vehicle_model' => 'Eicher 1110', 'registration_number' => 'MP04 MN 6789', 'capacity_tons' => 5.00, 'approval_status' => 'approved', 'availability_status' => 'busy', 'last_location_at' => $now->copy()->subMinutes(40)],
             ['partner_ref' => 'DRV-1049', 'name' => 'Ramesh Choudhary', 'phone' => '+91 98933 11008', 'email' => null, 'vehicle_type' => 'Tata 407', 'vehicle_model' => 'Tata 407', 'registration_number' => 'MP09 OP 1122', 'capacity_tons' => 3.00, 'approval_status' => 'approved', 'availability_status' => 'offline', 'last_location_at' => $now->copy()->subHours(3)],
@@ -43,7 +45,7 @@ class DemoDataSeeder extends Seeder
             [
                 'reference' => 'TRQ-2026-0142', 'customer_name' => 'Rakesh Sharma', 'customer_phone' => '+91 98260 41022', 'customer_email' => 'rakesh.sharma@example.test',
                 'pickup_address' => 'Scheme 54, Vijay Nagar', 'pickup_city' => 'Indore',
-                'destination_address' => 'Sitabuldi Main Road', 'destination_city' => 'Nagpur',
+                'destination_address' => 'Transport Nagar', 'destination_city' => 'Indore',
                 'goods_category' => 'Furniture', 'goods_description' => 'Two-seater sofa and a dining table, wrapped',
                 'quantity' => '2 items', 'weight_kg' => 450, 'is_fragile' => false, 'needs_loading_help' => true,
                 'special_instructions' => 'Call before arrival; ground floor pickup.',
@@ -163,7 +165,7 @@ class DemoDataSeeder extends Seeder
         ])->each(fn (array $row) => DriverApplication::query()->create($row));
 
         $events = [
-            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0142 · Indore → Nagpur', 'occurred_at' => $now->copy()->subMinutes(12)],
+            ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0142 · Vijay Nagar → Transport Nagar', 'occurred_at' => $now->copy()->subMinutes(12)],
             ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0143 · Bhopal → Indore', 'occurred_at' => $now->copy()->subMinutes(35)],
             ['type' => 'application_submitted', 'title' => 'Driver application submitted', 'description' => 'Ravi Chauhan · DRV-2081', 'occurred_at' => $now->copy()->subMinutes(40)],
             ['type' => 'request_received', 'title' => 'New request received', 'description' => 'TRQ-2026-0144 · Ujjain → Pune', 'occurred_at' => $now->copy()->subMinutes(70)],
